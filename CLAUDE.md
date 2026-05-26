@@ -415,6 +415,8 @@ docker system prune
 
 ### ⚡ HOW TO WORK WITH CLAUDE (IMPORTANT!)
 
+#### Rule 1: Small Steps (Incremental Execution)
+
 **NEVER give 10-step plans!** User will hit issues on step 1-2.
 
 **Instead: Small, testable increments**
@@ -445,6 +447,164 @@ Then we do Step 2.
 - User gets stuck and needs helper questions
 - Small steps = fast feedback = learning
 - Verify each step before moving forward
+
+---
+
+#### Rule 2: Ask Before Acting (Explicit Approvals)
+
+**NEVER auto-execute without asking first!**
+
+**Always follow this pattern:**
+
+```
+❌ DON'T:
+[automatically edit files]
+[run commands]
+[make commits]
+
+✅ DO:
+
+1️⃣ SHOW PLAN:
+"Here's what I'll do:
+- Edit: Backend/src/TaskManager.API/Controllers/ProjectController.cs
+  └─ Add GET /projects endpoint
+- Modify: appsettings.json
+  └─ Add logging level
+- Create: Backend/tests/ProjectControllerTests.cs
+  └─ Add unit tests"
+
+2️⃣ ASK FOR APPROVAL:
+"Ready to proceed? (yes/no)"
+
+3️⃣ WAIT FOR RESPONSE:
+User says: "yes" or "no" or "change X first"
+
+4️⃣ EXECUTE:
+Only then edit/create/run
+```
+
+---
+
+#### Rule 3: Show Git Changes (Transparency)
+
+**NEVER commit without showing what's being committed!**
+
+**Always do this:**
+
+```
+📝 FILES TO CHANGE:
+- src/TaskManager.API/Controllers/ProjectController.cs (new file)
+  └─ Added: GET /api/projects endpoint
+  
+- tests/ProjectControllerTests.cs (new file)
+  └─ Added: 5 unit tests
+
+📊 COMMIT MESSAGE:
+"Add Project CRUD endpoints - GET /api/projects
+
+- Created ProjectController with GetProjects method
+- Returns List<ProjectDto> from database
+- Includes error handling and logging
+- Added 5 unit tests with 100% coverage
+
+Co-Authored-By: Claude Haiku 4.5 <noreply@anthropic.com>"
+
+✅ Approve commit? (yes/no)"
+```
+
+**Why?**
+- User sees exactly what's being changed
+- User can catch mistakes before commit
+- User understands git history
+- User retains control
+
+---
+
+#### Rule 4: User Controls Actions
+
+**These require EXPLICIT approval:**
+
+1. **File edits** → Show diff first, ask confirmation
+2. **File creation** → Show content, ask confirmation
+3. **Git commits** → Show files + message, ask confirmation
+4. **Bash/PowerShell commands** → Show command + description, ask confirmation
+5. **Branch operations** → Show plan, ask confirmation
+6. **Destructive ops** (clean, delete) → Show what's deleted, ask confirmation
+
+**These are OK without asking:**
+- Information gathering (git status, file reads)
+- Explanations (no side effects)
+- Plans/suggestions (no execution)
+- Questions (clarification)
+
+---
+
+#### Rule 5: Describe Commands (Context for CLI)
+
+**Always show WHAT and WHY for Bash/PowerShell:**
+
+```
+❌ DON'T:
+"Run this: cd Backend && dotnet build"
+
+✅ DO:
+COMMAND: cd Backend && dotnet build
+
+DESCRIPTION:
+- Changes to Backend folder
+- Builds entire solution (all projects)
+- Checks for compilation errors
+- Needed because: Files changed, verify it compiles
+
+EXPECTED OUTPUT:
+"Kompilacja powiodła się" (no errors)
+```
+
+**Why?**
+- User understands what's happening
+- User can catch wrong commands
+- User can run manually if needed
+- Clear debugging if it fails
+
+---
+
+#### Rule 6: Use UI Dialogs for Approvals
+
+**Instead of "type yes/no", use clickable buttons:**
+
+When asking for approval, use UI dialog with options:
+- ✅ **Proceed** (execute action)
+- ❌ **Cancel** (don't do it, stay in discussion)
+- 💬 **Discuss First** (talk more before executing)
+
+**Examples:**
+
+```
+Ready to create Project controller?
+
+[Proceed] [Cancel] [Discuss First]
+```
+
+```
+Ready to commit changes?
+
+Files: 3 modified, 2 created
+Message: "Add Project CRUD endpoints"
+
+[Proceed] [Cancel] [Discuss First]
+```
+
+```
+Ready to run: dotnet build?
+
+[Proceed] [Cancel] [Discuss First]
+```
+
+**Why?**
+- Faster than typing "yes"
+- Less error-prone
+- Clear visual confirmation
+- Three options instead of binary yes/no
 
 ### Claude Code Instructions
 - **Use Clean Architecture**: Keep concerns separated
