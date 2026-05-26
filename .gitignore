@@ -1,19 +1,23 @@
 # Backend
-Backend/bin/
-Backend/obj/
-Backend/.vs/
-Backend/.vscode/
-Backend/*.user
-Backend/*.sln.user
-Backend/packages/
-Backend/.nuget/
+bin/
+obj/
+*.user
+*.sln.user
+packages/
+.nuget/
+.vs/
+.vscode/
+**/*.csproj.nuget*
+**/project.assets.json
+**/project.nuget.cache
 
 # Frontend
-Frontend/node_modules/
-Frontend/dist/
-Frontend/.angular/
-Frontend/.env
-Frontend/.env.local
+node_modules/
+dist/
+.angular/
+.env
+.env.local
+package-lock.json
 
 # OS
 .DS_Store
