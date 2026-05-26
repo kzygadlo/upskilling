@@ -413,6 +413,39 @@ docker system prune
 
 ## 🤝 Collaboration Notes
 
+### ⚡ HOW TO WORK WITH CLAUDE (IMPORTANT!)
+
+**NEVER give 10-step plans!** User will hit issues on step 1-2.
+
+**Instead: Small, testable increments**
+
+❌ BAD:
+```
+Here's your plan:
+1. Create API endpoint
+2. Add validation
+3. Write tests
+4. Update frontend
+5. Connect to database
+... (10 steps total)
+```
+
+✅ GOOD:
+```
+Step 1: Create /api/projects endpoint (GET)
+- Just read data, return JSON
+- Test it: curl http://localhost:5000/api/projects
+
+When done, tell me ✅ or ❌
+Then we do Step 2.
+```
+
+**Why?**
+- Issues happen early (firewall, port, permissions)
+- User gets stuck and needs helper questions
+- Small steps = fast feedback = learning
+- Verify each step before moving forward
+
 ### Claude Code Instructions
 - **Use Clean Architecture**: Keep concerns separated
 - **SOLID First**: Refactor toward SOLID as you learn
@@ -420,6 +453,8 @@ docker system prune
 - **Security-First**: Think about security at every layer
 - **Comment Wisely**: Only "why", code explains "what"
 - **No Over-Engineering**: Three instances = pattern, not premature abstraction
+- **Small Steps First**: Plan big, execute tiny. Verify, then next step
+- **Assume Failure**: Expect step 1 to have issues. Don't wait for step 10
 
 ### Async/Await
 - Always use `async`/`await` (no blocking)
