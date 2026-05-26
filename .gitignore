@@ -17,7 +17,6 @@ dist/
 .angular/
 .env
 .env.local
-package-lock.json
 
 # OS
 .DS_Store

@@ -89,7 +89,7 @@ Prepare for a senior fullstack role with hands-on expertise in:
 ## 🚀 Quick Start
 
 ### Prerequisites
-- ✅ Node.js 20+ (for Angular)
+- ✅ Node.js 22 LTS (for Angular)
 - ✅ .NET SDK 9.0+ (download from microsoft.com)
 - ✅ Visual Studio 2024 or VS Code
 - ✅ Git
@@ -112,17 +112,32 @@ npm install
 
 #### 2. Database Setup (Azure SQL or Local)
 
+> ⚠️ **Important:** Connection strings live in **User Secrets** (dev only) — never in `appsettings.json` (which is committed to git). `appsettings.json` keeps `DefaultConnection` empty by design.
+
 **Option A: Azure SQL Database (Recommended)**
-```bash
-# Create in Azure Portal → Copy connection string
-# Update: Backend/src/TaskManager.API/appsettings.json
-# ConnectionStrings.DefaultConnection
-```
+
+1. Create Azure SQL Database in Azure Portal (free tier OK).
+2. Configure Azure SQL firewall to allow your client IP.
+3. Set the connection string in User Secrets:
+   ```bash
+   cd Backend/src/TaskManager.API
+   dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Server=tcp:YOUR-SERVER.database.windows.net,1433;Initial Catalog=TaskManagerDb;User ID=YOUR-USER;Password=YOUR-PASSWORD;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;"
+   ```
+   (`UserSecretsId` is already set in `TaskManager.API.csproj` — no need to run `dotnet user-secrets init`.)
 
 **Option B: Local SQL Server Express**
+
+1. Install SQL Server Express (free) from Microsoft.
+2. Set the connection string in User Secrets:
+   ```bash
+   cd Backend/src/TaskManager.API
+   dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Server=localhost;Database=TaskManagerDb;Integrated Security=true;TrustServerCertificate=True;"
+   ```
+
+**Apply migrations** (creates tables in the chosen DB):
 ```bash
-# Install SQL Server Express (free) from Microsoft
-# Connection string: Server=localhost;Database=TaskManagerDb;Integrated Security=true;
+cd Backend
+dotnet ef database update --project src/TaskManager.Infrastructure --startup-project src/TaskManager.API
 ```
 
 #### 3. Run Locally
@@ -137,7 +152,7 @@ cd Frontend
 npm start
 ```
 
-**Backend API**: http://localhost:5000  
+**Backend API**: http://localhost:5250 (Swagger UI: http://localhost:5250/swagger)
 **Frontend**: http://localhost:4200
 
 #### 4. Docker Compose (All-in-one)
