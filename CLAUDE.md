@@ -608,25 +608,6 @@ Ready to run: dotnet build?
 
 ---
 
-#### Rule 7: Sprawdzaj Prerequisites (Check Before Asking)
-
-**NIGDY nie proś testować endpoint, jeśli serwis nie jest uruchomiony!**
-
-**Błąd**: Poprosiłem użytkownika o `curl http://localhost:5000/swagger` bez upewnienia się, że backend jest uruchomiony.
-
-**Wynik**: Użytkownik dostał błąd "Nie można połączyć się z serwerem"
-
-**Lekcja**: Przed każdym testem, upewnij się że:
-- Backend uruchomiony (`dotnet watch run`)
-- Frontend uruchomiony (`npm start`)
-- Baza danych dostępna (Azure SQL firewall OK, User Secrets loaded)
-
-**Wzór**:
-```
-❌ DON'T: "Sprawdzić czy API działa: curl http://localhost:5000/swagger"
-✅ DO: "Najpierw uruchom backend, potem testujemy"
-```
-
 ### Claude Code Instructions
 - **Use Clean Architecture**: Keep concerns separated
 - **SOLID First**: Refactor toward SOLID as you learn
