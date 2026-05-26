@@ -6,21 +6,85 @@ This file contains all tasks for the 12-week upskilling program. **Copy-paste th
 
 ## Week 1-2: Fundamentals & Setup
 
+### Learn: .NET ecosystem — co się zmieniło od 2020
+
+**Historia w pigułce (żeby zrozumieć nazewnictwo):**
+
+| Era | Co to | Status dziś |
+|---|---|---|
+| **.NET Framework** (2002–2019, do 4.8) | Oryginalny .NET. Tylko Windows. Monolit instalowany w systemie. | **Legacy.** Microsoft tylko łata bezpieczeństwo. Nowych projektów się nie pisze. Stare działają. |
+| **.NET Core** (2016–2019, do 3.1) | Re-pisana wersja: cross-platform (Linux, macOS, Windows), modularna, dystrybuowana z aplikacją. Równolegle do Framework. | **Skończony.** Wchłonięty przez "unified .NET" w 2020. |
+| **.NET 5+ (unified)** (2020 →) | Microsoft połączył oba światy. **Nazwa "Core" zniknęła z runtime** — dziś mówisz po prostu ".NET 9". Parzyste wersje = LTS (3 lata), nieparzyste = STS (1.5 roku). | **To używasz teraz.** |
+| **.NET Standard** | Specyfikacja API dla bibliotek, żeby działały i na Framework, i na Core. | **Prawie martwe.** W świecie .NET 5+ celujesz po prostu w `net9.0`. |
+
+**Pułapka nazewnicza:** runtime stracił "Core", ale **ASP.NET zachował**. Dziś jest:
+- **ASP.NET** (klasyczny, na .NET Framework) — WebForms, MVC 5, Web API 2 → **legacy**
+- **ASP.NET Core** — to czego używasz w .NET 9 → **aktualne**, "Core" zostało jako odróżnienie od starego
+
+**Komponenty Twojej aplikacji webowej w .NET 9:**
+
+```
+┌─────────────────────────────────────────────────┐
+│ Twój kod (Controllers, Services, DTOs)          │
+├─────────────────────────────────────────────────┤
+│ ASP.NET Core 9                                  │
+│ ├─ Kestrel (wbudowany serwer web, cross-plat.)  │
+│ ├─ Middleware pipeline (auth, CORS, logging…)   │
+│ ├─ DI container (wbudowany)                     │
+│ ├─ Routing & model binding (przez refleksję)    │
+│ ├─ Configuration (appsettings, User Secrets…)   │
+│ └─ Logging (ILogger)                            │
+├─────────────────────────────────────────────────┤
+│ EF Core 9 (opcjonalne — ORM)                    │
+├─────────────────────────────────────────────────┤
+│ BCL — Base Class Library (System.*)             │
+│ Collections, IO, Threading, Net, Text…          │
+├─────────────────────────────────────────────────┤
+│ .NET Runtime 9                                  │
+│ ├─ CLR (Common Language Runtime)                │
+│ ├─ GC (garbage collector)                       │
+│ └─ JIT / AOT compiler                           │
+└─────────────────────────────────────────────────┘
+
+SDK (dotnet CLI, Roslyn compiler, MSBuild)
+  └─ używane do build/run/test, nie ląduje w runtime
+```
+
+**Co realnie się zmieniło od .NET 4.8 (2020):**
+
+| Wtedy (Framework 4.8) | Dziś (.NET 9) |
+|---|---|
+| Tylko Windows + IIS | Cross-platform, Kestrel (IIS opcjonalny jako reverse proxy) |
+| `Web.config` (XML) | `appsettings.json` + DI w `Program.cs` |
+| `Global.asax`, OWIN startup | Minimal hosting model — wszystko w `Program.cs` |
+| MVC 5 / Web API 2 (osobne) | ASP.NET Core MVC — zunifikowane (kontrolery = oba) |
+| `System.Web.HttpContext` | `Microsoft.AspNetCore.Http.HttpContext` (zupełnie inny typ) |
+| Brak wbudowanego DI | Wbudowany DI container (Microsoft.Extensions.DependencyInjection) |
+| Performance: średnio | Performance: jeden z najszybszych runtime'ów na świecie (TechEmpower top 5) |
+| Deploy: instaluj framework na serwerze | Self-contained: aplikacja zawiera runtime, deploy = skopiuj folder |
+| EF6 (heavy, Windows-centric) | EF Core (lekki, cross-plat., async-first) |
+
+### Learn (dodatkowo):
+- [ ] Przeczytaj: "What's new in .NET 9" (microsoft.com)
+- [ ] Przeczytaj: "ASP.NET Core fundamentals" — middleware, DI, configuration
+- [ ] Zrozum różnicę: LTS (parzyste, .NET 8/10) vs STS (nieparzyste, .NET 7/9)
+- [ ] Sprawdź swój `TaskManager.API.csproj` — zobacz `<TargetFramework>net9.0</TargetFramework>` i SDK `Microsoft.NET.Sdk.Web`
+
 ### Tasks:
-- [ ] Install .NET 9 SDK (if not already installed)
+- [v] Install .NET 9 SDK (if not already installed)
 - [ ] Install Visual Studio 2024 Community (or use VS Code + C# extension)
-- [ ] Create Azure SQL Database (free tier)
+- [v] Create Azure SQL Database (free tier)
 - [ ] Read: "What's new in .NET 9" (microsoft.com)
 - [ ] Read: "Angular 17+ Signals" (angular.io documentation)
-- [ ] Clone skeleton project & run locally (both backend + frontend)
+- [v] Clone skeleton project & run locally (both backend + frontend)
 - [ ] Git basic workflow refresh (commit, push, pull, branches)
 - [ ] Setup VS Code extensions (C#, Angular, REST Client, Docker)
 
 ### Deliverable:
-- [ ] Backend API runs on http://localhost:5000
-- [ ] Frontend runs on http://localhost:4200
-- [ ] Database connection works
-- [ ] Git commits working properly
+- [v] Backend API runs on http://localhost:5000
+- [v] Frontend runs on http://localhost:4200
+- [v] Database connection works
+- [v] Git commits working properly
 
 **Checkpoint**: Run `dotnet run` (backend) and `npm start` (frontend) successfully
 
@@ -109,6 +173,12 @@ POST /api/projects → creates new project
   - [ ] Decorator Pattern
   - [ ] Observer Pattern
 - [ ] Async/await pitfalls (deadlocks, ConfigureAwait)
+- [ ] Reflection & metadata
+  - [ ] Type, MethodInfo, PropertyInfo (System.Reflection)
+  - [ ] Custom attributes — definicja i odczyt w runtime
+  - [ ] Activator.CreateInstance vs new (kiedy używać)
+  - [ ] Performance cost & alternatywy (source generators, expression trees)
+  - [ ] Gdzie refleksja jest używana pod maską: DI, EF Core, ASP.NET routing, Swashbuckle
 - [ ] Exception handling strategies
 - [ ] Structured logging (Serilog or built-in ILogger)
 
@@ -151,12 +221,143 @@ POST /api/projects → creates new project
   public class ValidationException : Exception { }
   ```
 
+- [ ] Napisz prostą metodę używającą refleksji
+  ```csharp
+  // Zaznacz property atrybutem i wypisz wszystkie zaznaczone properties klasy
+  [AttributeUsage(AttributeTargets.Property)]
+  public class AuditableAttribute : Attribute { }
+
+  public static void PrintAuditableProps<T>()
+  {
+      var props = typeof(T).GetProperties()
+          .Where(p => p.GetCustomAttribute<AuditableAttribute>() != null);
+      foreach (var p in props)
+          Console.WriteLine($"{p.Name}: {p.PropertyType.Name}");
+  }
+  ```
+  - Cel: zrozumieć jak frameworki (np. EF Core) skanują Twoje klasy
+
 ### Tests:
 - [ ] Test invalid CreateProjectDto fails validation
 - [ ] Test ProjectFactory creates valid projects
 - [ ] Test exception handler returns proper status codes
 
 **Checkpoint**: API returns proper error responses (400, 404, 500 with meaningful messages)
+
+---
+
+## Week 4.5: Concurrency, Threading & Cancellation
+
+### Learn:
+- [ ] Async vs threading — fundamentalna różnica
+  - [ ] I/O-bound (async/await — zwalnia wątek) vs CPU-bound (Thread/Task.Run — zajmuje wątek)
+  - [ ] Dlaczego async ≠ równoległość
+- [ ] Thread, ThreadPool, Task — czym się różnią
+- [ ] CancellationToken — propagacja przez całe API
+  - [ ] CancellationTokenSource, Linked tokens
+  - [ ] Wzór: każda metoda async przyjmuje CancellationToken
+- [ ] Łączenie zadań
+  - [ ] Task.WhenAll — czekaj na wszystkie
+  - [ ] Task.WhenAny — czekaj na pierwsze
+  - [ ] Continuation (.ContinueWith) — rzadko używane, kiedy ma sens
+- [ ] Synchronizacja
+  - [ ] lock (i dlaczego NIE działa w async)
+  - [ ] SemaphoreSlim (async-safe odpowiednik)
+  - [ ] Interlocked (atomowe operacje na intach)
+- [ ] Współbieżne kolekcje
+  - [ ] ConcurrentDictionary, ConcurrentQueue
+  - [ ] Channel<T> — nowoczesny producer/consumer
+- [ ] Streaming danych
+  - [ ] IAsyncEnumerable<T> + await foreach
+  - [ ] Kiedy zamiast Task<List<T>>
+- [ ] Równoległość
+  - [ ] Parallel.For / Parallel.ForEach (CPU-bound)
+  - [ ] PLINQ (.AsParallel())
+- [ ] Pułapki (anti-patterns)
+  - [ ] Deadlock przez .Result / .Wait() (klasyczny scenariusz w ASP.NET)
+  - [ ] async void (kiedy wolno, dlaczego prawie nigdy)
+  - [ ] Capture loop variable in Task.Run
+  - [ ] Sync over async / async over sync
+
+### Code Tasks:
+- [ ] Dodaj CancellationToken do wszystkich endpointów ProjectsController
+  ```csharp
+  [HttpGet]
+  public async Task<List<ProjectDto>> GetAll(CancellationToken ct)
+      => await _service.GetAllAsync(ct);
+  ```
+  - Przekaż token aż do EF Core: `await _context.Projects.ToListAsync(ct);`
+  - Test: w Swaggerze odpal request, zamknij kartę przed odpowiedzią — request powinien się anulować
+
+- [ ] Napisz CPU-bound task z Task.Run i CancellationToken
+  ```csharp
+  public async Task<long> CountPrimesAsync(int limit, CancellationToken ct)
+  {
+      return await Task.Run(() =>
+      {
+          long count = 0;
+          for (int i = 2; i <= limit; i++)
+          {
+              ct.ThrowIfCancellationRequested();
+              if (IsPrime(i)) count++;
+          }
+          return count;
+      }, ct);
+  }
+  ```
+
+- [ ] Użyj Task.WhenAll do równoległego pobrania danych
+  ```csharp
+  var projectTask = _projectService.GetAsync(id, ct);
+  var statsTask = _statsService.GetForProjectAsync(id, ct);
+  await Task.WhenAll(projectTask, statsTask);
+  return new { Project = projectTask.Result, Stats = statsTask.Result };
+  ```
+
+- [ ] Pokaż deadlock przez .Result, potem napraw
+  ```csharp
+  // ❌ BAD — deadlock w ASP.NET classic context
+  public IActionResult Bad() => Ok(_service.GetAsync().Result);
+
+  // ✅ GOOD
+  public async Task<IActionResult> Good() => Ok(await _service.GetAsync());
+  ```
+
+- [ ] Użyj SemaphoreSlim do throttlowania równoczesnych wywołań
+  ```csharp
+  private readonly SemaphoreSlim _semaphore = new(3); // max 3 jednocześnie
+
+  public async Task<T> ThrottledCall<T>(Func<Task<T>> work)
+  {
+      await _semaphore.WaitAsync();
+      try { return await work(); }
+      finally { _semaphore.Release(); }
+  }
+  ```
+
+- [ ] Zwróć IAsyncEnumerable z endpointu (streaming)
+  ```csharp
+  [HttpGet("stream")]
+  public async IAsyncEnumerable<ProjectDto> Stream(
+      [EnumeratorCancellation] CancellationToken ct)
+  {
+      await foreach (var p in _service.StreamAllAsync(ct))
+          yield return p;
+  }
+  ```
+
+### Tests:
+- [ ] Test że anulowanie tokena przerywa długą operację (OperationCanceledException)
+- [ ] Test że Task.WhenAll faktycznie odpala równolegle (mierz czas)
+- [ ] Test że SemaphoreSlim ogranicza concurrency do N
+
+**Checkpoint**:
+```
+Wszystkie endpointy przyjmują CancellationToken
+Brak .Result / .Wait() w całej aplikacji
+Rozumiesz różnicę: async (I/O) vs threading (CPU)
+Wiesz kiedy użyć Task.WhenAll, kiedy SemaphoreSlim
+```
 
 ---
 
