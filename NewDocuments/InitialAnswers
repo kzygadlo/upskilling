@@ -1,0 +1,1070 @@
+BCM .NET Guild: Kompleksowe Kompendium Wiedzy (Level 1 & Level 2)
+1. C#, .NET Platform & Runtime
+Level 1: Fundamenty języka i platformy
+Core Syntax & OOP Principles
+Dziedziczenie (Inheritance): Mechanizm pozwalający klasie pochodnej przejąć strukturę i zachowanie (pola, metody) klasy bazowej, co eliminuje powtarzalność kodu. W C# klasa może dziedziczyć tylko po jednej klasie bazowej, ale może implementować wiele interfejsów.
+Polimorfizm (Polymorphic Behavior): Zdolność obiektów różnych klas pochodnych do reagowania na to samo wywołanie metody w specyficzny dla siebie sposób. Realizuje się go poprzez nadpisywanie metod wirtualnych (virtual / override) lub implementację wspólnych interfejsów, dzięki czemu kod wywołujący nie musi znać dokładnego typu obiektu, na którym pracuje.
+Enkapsulacja (Encapsulation): Ukrywanie wewnętrznego stanu i szczegółów implementacji obiektu przed światem zewnętrznym oraz udostępnianie interfejsu do interakcji za pomocą modyfikatorów dostępu (private, protected, public). Pozwala to na pełną kontrolę nad poprawnością danych poprzez walidację wewnątrz właściwości (get / set).
+Abstrakcja (Abstraction): Proces wyodrębniania kluczowych cech obiektu z pominięciem szczegółów nieistotnych dla danego problemu. W C# realizuje się ją za pomocą klas abstrakcyjnych (które mogą posiadać częściową implementację) oraz interfejsów (będących czystym kontraktem zachowań).
+Value vs Reference Types
+Typy wartościowe (Value Types): Przechowują faktyczne dane bezpośrednio na Stosie (Stack) i obejmują m.in. proste typy numeryczne (int, double), logiczne (bool) oraz struktury (struct). Przy przekazywaniu do metody tworzona jest ich pełna kopia w pamięci, co oznacza, że modyfikacja parametru wewnątrz funkcji nie wpływa na oryginalną zmienną.
+Typy referencyjne (Reference Types): Przechowują na stosie jedynie adres (wskaźnik) wskazujący na faktyczny obiekt alokowany na Stercie (Heap); zaliczamy do nich klasy, interfejsy, delegaty oraz tablice. Kiedy przekazujesz typ referencyjny do metody, kopiujesz jedynie ten wskaźnik, więc operowanie na obiekcie wewnątrz funkcji modyfikuje ten sam egzemplarz w pamięci.
+Basic Collections
+List<T>: Dynamiczna tablica o ciągłej alokacji pamięci, która automatycznie zwiększa swój rozmiar (zazwyczaj dwukrotnie), gdy skończy się jej wewnętrzna pojemność (Capacity). Oferuje bardzo szybki dostęp po indeksie O(1), ale usuwanie lub wstawianie elementów w środku kolekcji jest kosztowne O(n), ponieważ wymaga przesunięcia pozostałych elementów.
+Dictionary<TKey, TValue>: Kolekcja par klucz-wartość działająca w oparciu o tablicę mieszającą (Hash Table), która zamienia klucz na unikalny kod liczbowy (Hash). Zapewnia ekstremalnie szybkie wyszukiwanie, dodawanie i usuwanie elementów w średnim czasie stałym O(1), pod warunkiem, że klucze mają dobrze zaimplementowaną metodę GetHashCode().
+HashSet<T>: Nieuporządkowana kolekcja unikalnych elementów, która uniemożliwia przechowywanie duplikatów. Podobnie jak słownik, wykorzystuje tablicę mieszającą, dzięki czemu operacje sprawdzania obecności elementu metodą .Contains() działają w czasie stałym O(1), co czyni ją idealną do filtrowania i operacji na zbiorach.
+Exception Handling
+Bloki try-catch-finally służą do kontrolowanego wychwytywania błędów wykonania, gdzie sekcja finally wykonuje się zawsze (np. do zamykania plików czy połączeń sieciowych), niezależnie od tego, czy błąd wystąpił. Kluczowe jest stosowanie konstrukcji throw; w bloku catch, która przekazuje złapany wyjątek wyżej z zachowaniem oryginalnego punktu awarii (Stack Trace), podczas gdy throw ex; nadpisuje historię wywołań, utrudniając debugowanie.
+Simple Async Patterns (Wprowadzenie)
+Współbieżność asynchroniczna opiera się na wzorcu TAP (Task-based Asynchronous Pattern), gdzie metody zwracają obiekty Task lub Task<T> reprezentujące operacje, które zakończą się w przyszłości. Słowo async informuje kompilator, że wewnątrz metody pojawi się await, które wstrzymuje wykonanie metody do momentu ukończenia asynchronicznego zadania sieciowego czy dyskowego, zwalniając bieżący wątek procesora do innych prac.
+Immutability (Niezmienność)
+Cecha obiektów, których stan po utworzeniu w konstruktorze staje się całkowicie niemodyfikowalny. W C# realizuje się to za pomocą słowa kluczowego readonly dla pól oraz właściwości typu { get; init; }. Najwygodniejszą formą są nowoczesne rekordy (public record Product(string Name, decimal Price);), które automatycznie generują kod niezmienny i implementują porównywanie obiektów po wartościach pól, a nie po adresach w pamięci.
+String Handling
+Typ string w C# jest tablicą znaków alokowaną na stercie, która jest rygorystycznie niezmienna – każda operacja typu text + "a" tworzy zupełnie nowy obiekt tekstowy w pamięci i porzuca stary. Przy intensywnych modyfikacjach tekstu (np. w pętli) należy stosować klasę StringBuilder, która operuje na modyfikowalnym buforze pamięci, lub nowoczesne, bezalokacyjne widoki na fragmenty pamięci tekstowej: ReadOnlySpan<char>.
+Nullable Types
+Dla typów wartościowych (int?, bool?): Reprezentuje strukturę Nullable<T>, która pozwala typom domyślnie niemogącym przyjąć wartości pustej przechowywać stan null (np. brak podanego wieku w bazie danych).
+Nullable Reference Types (NRT): Opcja kompilatora (od C# 8), która zmusza programistę do jawnego deklarowania, czy dany typ referencyjny (np. klasa, string) może legalnie przyjąć null (zapis string?), czy też domyślnie jest to zabronione (string). Kompilator generuje ostrzeżenia przed potencjalnym NullReferenceException.
+Modern C# Features
+Nowoczesny C# (wersje 9-13+) redukuje ilość powtarzalnego kodu (boilerplate). Wprowadza Top-level statements umożliwiające pisanie głównego kodu aplikacji bez jawnej klasy Program i metody Main, potężne dopasowywanie wzorców (Pattern Matching) zastępujące długie bloki if/else, Primary Constructors pozwalające deklarować parametry konstruktora bezpośrednio przy nazwie klasy oraz instrukcje using bez klamer, automatycznie zwalniające zasoby na końcu bloku kodu.
+Level 2: Zaawansowane mechanizmy i wydajność
+LINQ & Generics (Zaawansowane)
+Generics (Typy generyczne): Pozwalają projektować klasy i metody z parametrem typu (np. Repository<T>), odsuwając deklarację konkretnego typu danych do momentu inicjalizacji w kodzie. Zapewnia to wielokrotne wykorzystanie algorytmów bez utraty wydajności (brak konieczności rzutowania na typ object i unikanie boxingu).
+LINQ (Language Integrated Query): Umożliwia pisanie zapytań do danych za pomocą metod rozszerzających i lambd. Kluczowe jest rozróżnienie pomiędzy IQueryable (zapytanie buduje drzewo ekspresji przekazywane i tłumaczone na SQL bezpośrednio po stronie bazy danych przy wywołaniu .ToList()) a IEnumerable (operacje wykonywane są lokalnie w pamięci RAM aplikacji na pobranych już rekordach).
+Delegates & Lambdas
+Delegat (Delegate): Silnie typowany wskaźnik do metody o określonej sygnaturze, pozwalający przekazywać zachowania (funkcje) jako parametry do innych klas. W nowoczesnym kodzie nie deklaruje się już własnych delegatów, lecz używa gotowych typów systemowych: Action<...> dla metod zwracających void oraz Func<..., TResult> dla metod zwracających konkretną wartość. Wyrażenia lambda (x => x.Id == id) to po prostu zwięzła, anonimowa składnia do tworzenia takich delegatów w locie.
+Async Programming (Zaawansowane)
+Mechanizm asynchroniczności opiera się na maszynie stanów (State Machine) generowanej automatycznie przez kompilator w miejscu użycia async/await. Kiedy kod napotyka await na operacji I/O, bieżący wątek jest natychmiast zwalniany do puli wątków (ThreadPool) i może obsługiwać inne żądania, a gdy system operacyjny zakończy pobieranie danych, maszyna stanów pobiera dowolny wolny wątek z puli i wznawia wykonywanie metody od miejsca zatrzymania. Zapobiega to blokowaniu zasobów i drastycznie podnosi przepustowość serwera.
+CLR & Garbage Collection Internals
+Garbage Collector (GC) zarządza automatycznym zwalnianiem pamięci na stercie i działa w oparciu o system trzech generacji, optymalizując czas przerw działania systemu:
+Generacja 0: Przechowuje najświeższe, krótkotrwałe obiekty (np. zmienne lokalne metod); jej czyszczenie jest niezwykle częste i szybkie.
+Generacja 1: Stanowi bufor dla obiektów, które przetrwały czyszczenie Gen 0, ale jeszcze nie zakwalifikowały się jako długoterminowe.
+Generacja 2: Zawiera obiekty długożyjące (np. Singletony, konfiguracje); jej czyszczenie (Full GC) jest bardzo kosztowne procesorowo i wywołuje krótkie zamrożenie wątków aplikacji (Stop-The-World).
+LOH (Large Object Heap): Specjalny obszar sterty dla obiektów większych niż 85 KB (np. duże tablice bajtów, długie teksty). Obiekty te od razu trafiają do wirtualnej odpowiedniczki Gen 2, a ich czyszczenie nie wiąże się domyślnie z kompaktowaniem (przesuwaniem) pamięci, co przy nieuważnym kodowaniu może prowadzić do jej fragmentacji i błędów braku pamięci.
+Performance, Memory Usage & Concurrency
+Stack vs Heap: Alokacja na Stosie (Stack) jest błyskawiczna i automatycznie czyszczona po wyjściu z metody, podczas gdy alokacja na Stercie (Heap) obciąża Garbage Collector. Wydajny kod minimalizuje alokacje na stercie poprzez stosowanie struktur (struct), unikanie pakowania typów prostych w obiekty (boxing) oraz ponowne wykorzystywanie buforów pamięci.
+Współbieżność (Concurrency): Sytuacja, w której wiele wątków próbuje jednocześnie modyfikować te same dane w pamięci, co grozi uszkodzeniem stanu aplikacji (Race Condition). Do ochrony danych stosuje się mechanizmy synchronizacji: instrukcję lock (blokada na poziomie jednego procesu), lekkie semafory asynchroniczne SemaphoreSlim oraz bezpieczne wątkowo kolekcje systemowe (ConcurrentDictionary), które wewnętrznie optymalizują blokowanie zasobów.
+2. ASP.NET Core & Web APIs
+Level 1: Budowa i fundamenty HTTP
+Controllers vs Minimal APIs
+Controllers (Kontrolery): Klasyczne podejście strukturalne, gdzie powiązane tematycznie endpointy grupuje się w klasy dziedziczące po ControllerBase. Zapewnia automatyczne wsparcie dla filtrów i rozbudowanych mechanizmów MVC, co ułatwia organizację w potężnych systemach korporacyjnych.
+Minimal APIs: Podejście wprowadzone w celu maksymalnego uproszczenia architektury i zwiększenia wydajności poprzez mapowanie tras bezpośrednio w pliku startowym Program.cs (app.MapGet(...)). Eliminują narzut refleksji i tworzenia instancji klas kontrolerów, przez co są idealnym wyborem dla lekkich mikroserwisów i szybkich punktów końcowych.
+HTTP Fundamentals
+Protokół komunikacyjny sieci web oparty na cyklu Żądanie-Odpowiedź (Request-Response). Żądanie klienta niesie ze sobą Metodę HTTP definiującą intencję działania oraz nagłówki i treść (Body), na co serwer odpowiada Kodem statusu:
+200 OK / 201 Created – sukces operacji.
+400 Bad Request – błąd walidacji danych po stronie klienta.
+401 Unauthorized / 403 Forbidden – brak tożsamości lub brak uprawnień do zasobu.
+404 Not Found – żądany zasób nie istnieje.
+500 Internal Server Error – nieobsłużony błąd (wyjątek) po stronie serwera aplikacji.
+Routing
+Wbudowany w .NET system odpowiedzialny za dopasowanie adresu URL nadesłanego żądania HTTP do odpowiedniego fragmentu kodu (metody w kontrolerze lub lambdy). Może być realizowany centralnie lub za pomocą czytelnych atrybutów bezpośrednio nad metodami (np. [HttpGet("orders/{id:int}")]), gdzie szablon potrafi automatycznie wymusić typ przekazywanego parametru w adresie.
+Serialization
+Proces transformacji obiektów działających w pamięci operacyjnej C# na format tekstowy (głównie JSON), gotowy do przesłania przez sieć, oraz proces odwrotny – Deserializacja (odczyt tekstu JSON z żądania i zamiana na silnie typowany obiekt C#). W .NET domyślnie zarządza tym wysokowydajna biblioteka System.Text.Json, która operuje na strumieniach pamięci bez generowania zbędnych alokacji tekstowych.
+Dependency Injection (DI) (Wprowadzenie)
+Wzorzec projektowy wbudowany bezpośrednio w rdzeń ASP.NET Core, służący do luźnego powiązywania klas. Zamiast ręcznie tworzyć instancje zależności za pomocą słowa kluczowego new wewnątrz metod, klasy deklarują swoje potrzeby (zazwyczaj interfejsy) w parametrach konstruktora, a framework automatycznie dostarcza odpowiednie, skonfigurowane obiekty w momencie ich wywołania.
+Level 2: Potok przetwarzania, bezpieczeństwo i komunikacja inter-service
+Middleware Pipeline
+Sekwencyjny łańcuch komponentów (klas) przetwarzających każde żądanie HTTP i każdą odpowiedź serwera. Żądanie wpada do potoku, przechodzi przez kolejne skonfigurowane warstwy (np. obsługa błędów → nagłówki bezpieczeństwa → uwierzytelnianie → autoryzacja), trafia do właściwego endpointu wykonującego logikę, a następnie wraca przez te same komponenty middleware w odwrotnej kolejności, co umożliwia np. globalną modyfikację odpowiedzi.
+Filters
+Specjalistyczne komponenty działające wyłącznie w kontekście infrastruktury MVC/Kontrolerów, uruchamiane na znacznie późniejszym etapie niż Middleware – już po dopasowaniu routingu do konkretnej metody. Wyróżniamy m.in. AuthorizationFilters (weryfikacja praw dostępu), ActionFilters (kod wykonywany bezpośrednio przed i po wejściu do metody kontrolera) oraz ExceptionFilters (służące do globalnego przechwytywania i formatowania wyjątków rzuconych w warstwie prezentacji).
+Validation
+Proces rygorystycznego sprawdzania poprawności danych przysyłanych przez użytkownika z zewnątrz, zanim zostaną one przekazane do przetworzenia w warstwie biznesowej. Najwyższym standardem w ekosystemie .NET jest wykorzystanie biblioteki FluentValidation, która pozwala odizolować reguły sprawdzające (np. unikalność, format e-mail, wymagane zakresy) do osobnych klas, dbając o czystość kodu encji i modeli.
+Authentication & Authorization (Zaawansowane)
+Authentication (Uwierzytelnianie): Warstwa middleware odpowiedzialna za jednoznaczne ustalenie tożsamości użytkownika na podstawie dostarczonych dowodów (np. sprawdzenie i odkodowanie przysłanego w nagłówku tokenu JWT). Jeśli proces się powiedzie, do bieżącego kontekstu żądania przypisywany jest obiekt ClaimsPrincipal.
+Authorization (Autoryzacja): Warstwa sprawdzająca, czy zidentyfikowany użytkownik posiada realne prawa do wykonania danej akcji. W .NET realizowana za pomocą prostego sprawdzania ról ([Authorize(Roles = "Admin")]) lub znacznie bardziej elastycznego podejścia opartego na politykach (Policy-Based Authorization), gdzie w kodzie definiuje się zestaw wymagań (np. wiek > 18 lat oraz posiadanie konkretnego uprawnienia z systemu zewnętrznego), które użytkownik musi spełnić.
+Clean REST API Design
+Projektowanie interfejsów sieciowych w oparciu o spójne standardy biznesowe. Obejmuje obowiązkowe Wersjonowanie API (Versioning) w celu rozwoju systemu bez przerywania działania aplikacji zewnętrznych klientów (poprzez ścieżki /v1/, parametry query lub nagłówki żądania). Dodatkowo, błędy systemowe są jednolicie mapowane na standard ProblemDetails (czytelna struktura błędu w formacie JSON), a pełna dokumentacja techniczna punktów końcowych generuje się automatycznie za pomocą specyfikacji OpenAPI/Swagger.
+gRPC for Inter-Service Communication
+Wysokowydajny, nowoczesny framework RPC (Remote Procedure Call) stworzony do bezpośredniej, synchronicznej komunikacji pomiędzy usługami (np. w architekturze mikroserwisowej). W przeciwieństwie do REST-a przesyłającego tekstowy JSON, gRPC wykorzystuje binarną serializację Protocol Buffers (pliki .proto) oraz protokół HTTP/2, co gwarantuje drastyczne zmniejszenie opóźnień sieciowych, minimalne zużycie transferu oraz silne typowanie kontraktu między dwiema aplikacjami deweloperskimi.
+
+3. Data Access & Persistence
+Level 1: Podstawy relacyjne i EF Core CRUD
+Basic SQL Knowledge
+Zdolność do samodzielnego tworzenia i optymalizowania zapytań w języku SQL bezpośrednio na bazie danych. Obejmuje wyciąganie danych (SELECT), łączenie powiązanych tabel za pomocą złączeń (INNER JOIN, LEFT JOIN), filtrowanie rekordów klauzulą WHERE, grupowanie wyników za pomocą GROUP BY połączone z agregacją danych (SUM, COUNT) oraz wykonywanie podstawowych operacji modyfikujących zawartość tabel (INSERT, UPDATE, DELETE).
+EF Core CRUD Operations
+Wykonywanie podstawowych operacji na danych za pomocą kodu C# z wykorzystaniem Entity Framework Core. Polega na dodawaniu nowych encji metodą .Add(), oznaczaniu zmienionych obiektów przez .Update() oraz usuwaniu za pomocą .Remove(). Wszystkie te instrukcje są kolejkowane w pamięci aplikacji i wykonywane na bazie danych w ramach jednej transakcji dopiero w momencie wywołania metody SaveChangesAsync().
+DbContext
+Centralna klasa architektury EF Core działająca jako implementacja wzorców Unit of Work oraz Repository. Reprezentuje aktywną sesję z bazą danych, odpowiada za bezpieczne otwieranie i zamykanie fizycznych połączeń sieciowych, definiuje mapowanie tabel za pomocą właściwości DbSet<T> oraz zawiera mechanizm Change Tracker, który monitoruje stan pobranych obiektów w celu automatycznego wygenerowania zapytań SQL typu UPDATE przy zapisie.
+Migrations
+Wbudowane narzędzie EF Core do ewolucyjnego zarządzania strukturą bazy danych. Pozwala programiście na automatyczne generowanie plików kodu C# opisujących zmiany w bazie (np. dodanie kolumny, nowa tabela) na podstawie modyfikacji wprowadzonych w modelach C#. Migracje te tworzą uporządkowaną historię zmian, którą można automatycznie zaaplikować na bazach testowych i produkcyjnych, eliminując potrzebę ręcznego uruchamiania skryptów SQL.
+Existing Databases, Stored Procedures & Views
+Umiejętność integracji EF Core z bazami, które już istnieją i zostały zaprojektowane wcześniej (podejście Database-First z użyciem narzędzi do scaffoldingu struktur danych do klas C#). Obejmuje również wywoływanie istniejących w bazie procedur składowanych (Stored Procedures) za pomocą poleceń typu context.Database.ExecuteSqlRaw oraz mapowanie widoków bazodanowych (Views), które w kodzie C# są traktowane jak zwykłe kolekcje encji, ale służą wyłącznie do bezpiecznego odczytu zagregowanych danych.
+Level 2: Transakcje, optymalizacja i bazy NoSQL
+Relationships Mapping
+Zaawansowane konfigurowanie powiązań między encjami w EF Core za pomocą języka Fluent API w metodzie OnModelCreating. Obejmuje precyzyjne definiowanie relacji jeden-do-jednego (wymagających wskazania, która tabela posiada klucz obcy), jeden-do-wielu oraz relacji wielu-do-wielu, gdzie nowoczesny EF Core potrafi automatycznie zarządzać ukrytą tabelą pośredniczącą bez konieczności jawnego tworzenia jej jako osobnej klasy w kodzie C#.
+Transactions
+Mechanizm grupujący wiele operacji zapisu do bazy danych w jedną atomową jednostkę, zgodnie z zasadami ACID. EF Core domyślnie uruchamia ukrytą transakcję przy każdym wywołaniu SaveChangesAsync(), ale przy operacjach rozproszonych na kilku różnych kontekstach lub skomplikowanej logice biznesowej, programista musi jawnie otworzyć transakcję za pomocą context.Database.BeginTransactionAsync(), gwarantując, że jakikolwiek błąd w środku procesu wywoła operację Rollback i całkowicie cofnie wszelkie częściowe zmiany struktury danych.
+Indexing & Performance Considerations
+Świadome projektowanie indeksów bazodanowych z poziomu kodu EF Core przy użyciu atrybutów [Index] lub Fluent API. Indeksy działają jak spis treści dla tabeli i są kluczowe dla wydajności aplikacji – odpowiednio dobrane pod kolumny najczęściej występujące w warunkach wyszukiwania (WHERE) i łączenia (JOIN) drastycznie przyspieszają zapytania, chroniąc serwer bazy danych przed kosztownym operacjami pełnego przeszukiwania dysku (Table Scan).
+Projections & Query Optimization
+Projekcje: Technika polegająca na rygorystycznym unikaniu pobierania z bazy całych encji, jeśli potrzebujemy tylko kilku pól. Realizuje się ją za pomocą operatora .Select(), który zmusza EF Core do wygenerowania zapytania SQL pobierającego wyłącznie wskazane kolumny i mapującego je bezpośrednio na lekki obiekt DTO.
+Optymalizacja zapytań: Unikanie problemu wydajnościowego N+1 poprzez stosowanie techniki Eager Loading (.Include()) w celu pobrania powiązanych danych w jednym zapytaniu SQL, zamiast leniwego dociągania ich w pętli. Dodatkowo, dla operacji prezentacji danych (gdzie nie będziemy modyfikować obiektów), stosuje się metodę .AsNoTracking(), co całkowicie wyłącza wewnętrzny mechanizm śledzenia zmian w DbContext, oszczędzając pamięć RAM i czas procesora.
+EF Core vs Lighter Tools (Dapper)
+Umiejętność doboru optymalnego narzędzia dostępu do danych w zależności od charakterystyki operacji:
+EF Core: Potężny, pełny ORM z automatycznym generowaniem zapytań i śledzeniem stanu – idealny wybór dla operacji zapisu, transakcji oraz złożonej logiki biznesowej, gdzie priorytetem jest bezpieczeństwo typów i szybkość pisania kodu.
+Dapper: Lekki Micro-ORM, który nie posiada mechanizmów śledzenia zmian ani automatycznego generowania SQL, ale w zamian oferuje zerowy narzut wydajnościowy i błyskawiczne mapowanie wyników surowych zapytań SQL na obiekty C# – doskonały wybór dla krytycznych wydajnościowo odczytów, skomplikowanych raportów oraz systemów o dużej przepustowości danych.
+
+NoSQL Options & Polyglot Persistence
+Koncepcja stosowania optymalnych rodzajów baz danych do konkretnych zadań w ramach jednego systemu (Polyglot Persistence):
+Document Stores (MongoDB, CosmosDB): Przechowują dane w postaci elastycznych, niezależnych dokumentów JSON bez sztywnego schematu – idealne dla systemów CMS, katalogów produktów lub danych o dynamicznej strukturze.
+Key-Value Stores (Redis): Przechowują proste pary unikalny klucz-wartość bezpośrednio w pamięci podręcznej RAM – używane jako ultraszybkie systemy cache'owania danych, menedżery sesji użytkowników lub systemy dystrybucji wiadomości.
+Time-Series Databases (InfluxDB): Specjalistyczne bazy zoptymalizowane pod kątem błyskawicznego, ciągłego dopisywania i analizowania danych powiązanych rygorystycznie ze stemplami czasu – wykorzystywane do przechowywania logów systemowych, metryk wydajności infrastruktury oraz odczytów telemetrycznych z czujników IoT.
+4. Architecture & Design
+Level 1: Podział odpowiedzialności i wzorce
+Layered Architecture & Separation of Concerns (SoC)
+Separation of Concerns (Rozdzielenie odpowiedzialności): Fundamentalna zasada inżynierii oprogramowania mówiąca, że dany fragment kodu (klasa, moduł) powinien odpowiadać za jedną, ściśle wydzieloną funkcjonalność systemu i nie mieszać się z innymi logicznymi zadaniami.
+Layered Architecture (Architektura warstwowa): Architektoniczna realizacja zasady SoC, dzieląca aplikację na poziome warstwy (najczęściej: Prezentacji/API → Logiki Biznesowej → Dostępu do Danych). Przepływ zależności jest rygorystyczny i jednokierunkowy – warstwa wyższa może komunikować się wyłącznie z warstwami położonymi bezpośrednio pod nią, co ułatwia testowanie i wymianę poszczególnych komponentów.
+Basic Design Patterns
+Factory (Fabryka): Kreacyjny wzorzec projektowy, którego celem jest przeniesienie skomplikowanej logiki inicjalizacji i tworzenia obiektów do jednej, wyspecjalizowanej klasy. Klient wywołujący fabrykę prosi jedynie o stworzenie obiektu spełniającego dany interfejs, nie posiadając wiedzy o konkretnej klasie implementacyjnej ani o parametrach jej konstruktora.
+Adapter: Strukturalny wzorzec projektowy działający jako technologiczny łącznik (przejściówka) pomiędzy dwoma systemami o niekompatybilnych interfejsach. Przyjmuje dane w formacie zrozumiałym dla aplikacji wewnętrznej i w locie mapuje je oraz tłumaczy na strukturę wymaganą przez zewnętrzną bibliotekę lub zewnętrzne API, pozwalając na integrację bez modyfikowania rdzenia własnego kodu.
+Repository: Wzorzec odcinający bezpośrednią logikę dostępu do danych (np. zapytania EF Core) od warstwy biznesowej. Udostępnia zestaw czystych metod przypominających operacje na zwykłej kolekcji w pamięci RAM (GetById, Add), ukrywając przed resztą aplikacji szczegóły dotyczące technologii bazodanowej, co teoretycznie umożliwia bezbolesną wymianę bazy danych pod spodem.
+Monolith vs Microservices Concepts
+Monolith (Monolit): Podejście architektoniczne, w którym cały system biznesowy, wszystkie jego moduły (np. płatności, magazyn, powiadomienia) oraz warstwy są połączone i wdrażane jako jedna, wspólna jednostka aplikacyjna uruchamiana na serwerze z jedną bazą danych. Charakteryzuje się prostotą tworzenia, debugowania i początkowego wdrażania, ale staje się trudny w utrzymaniu i niezależnym skalowaniu przy wzroście systemu i zespołu.
+Microservices (Mikroserwisy): Styl architektoniczny dzielący system na małe, całkowicie autonomiczne i niezależnie wdrażane mini-aplikacje skupione wokół konkretnych domen biznesowych. Każdy mikroserwis posiada własną, odizolowaną bazę danych i komunikuje się z pozostałymi za pomocą sieci (REST API, gRPC lub kolejki wiadomości), co zapewnia gigantyczną elastyczność skalowania i niezależność technologiczną, ale drastycznie podnosi stopień skomplikowania infrastruktury, sieci oraz zarządzania spójnością danych.
+Hexagonal Architecture (Ports & Adapters)
+Zaawansowany wzorzec architektoniczny, który stawia czystą, niezależną logikę biznesową (rdzeń systemu) w absolutnym centrum aplikacji, całkowicie odwracając kierunek zależności znany z architektury warstwowej. Rdzeń biznesowy nie wie nic o bazie danych, interfejsie użytkownika czy zewnętrznych serwisach; definiuje jedynie abstrakcyjne interfejsy wejściowe i wyjściowe (Ports). Zewnętrzne technologie stanowią Adapters (np. kontroler API jest adapterem wejściowym, a klasa EF Core adapterem wyjściowym), które podpinają się pod porty, co sprawia, że zmiana technologii (np. migracja z SQL Server do PostgreSQL) wymaga jedynie napisania nowego adaptera, bez dotykania kodu biznesowego.
+CQRS Basics
+CQRS (Command Query Responsibility Segregation): Wzorzec architektoniczny nakazujący całkowite rozdzielenie kodu odpowiedzialnego za modyfikację stanu aplikacji (Commands – operacje zapisu, np. dodaj zamówienie, zmień status, które z zasady nie powinny zwracać danych biznesowych) od kodu odpowiedzialnego wyłącznie za prezentację danych (Queries – operacje odczytu). W podstawowej wersji na poziomie kodu pozwala to na tworzenie małych, wyspecjalizowanych klas obsługujących tylko jedno konkretne zadanie (np. przy użyciu biblioteki MediatR), co drastycznie podnosi czytelność i ułatwia rozwój systemu.
+Level 2: Czysta architektura, odporność i wzorce zdarzeniowe
+Clean Architecture
+Ewolucja architektury heksagonalnej, popularyzowana przez Roberta C. Martina (Uncle Bob), która organizuje kod w postaci koncentrycznych kręgów, gdzie kierunek zależności zawsze bezwzględnie zmierza od zewnątrz do środka. W samym centrum znajdują się Domain Entities (czysty biznes) oraz Use Cases / Application Core (logika aplikacji), a wszelkie szczegóły techniczne, takie jak bazy danych, systemy operacyjne, frameworki czy UI, znajdują się na samym zewnętrznym kręgu i zależą od abstrakcji zdefiniowanych w środku, gwarantując maksymalną testowalność i niezależność systemu od frameworków.
+Resilience Patterns
+Wzorce odpornościowe stosowane w celach zabezpieczenia aplikacji przed awariami w systemach rozproszonych i komunikacji sieciowej (w .NET realizowane za pomocą biblioteki Polly):
+Retry Pattern: Automatyczne powtórzenie nieudanego zapytania sieciowego (np. do zewnętrznego API) określoną liczbę razy w nadziei, że awaria miała charakter chwilowy.
+Circuit Breaker (Bezpiecznik): Monitoruje liczbę awarii i jeśli przekroczy ona ustalony próg, bezpiecznik "rozłącza się", natychmiast blokując kolejne żądania i zwracając błąd bez marnowania zasobów sieciowych, dając awaryjnemu systemowi zewnętrznemu czas na powrót do stabilności.
+Microservices Design & Components Boundaries
+Umiejętność prawidłowego dekomponowania systemu na mikroserwisy w oparciu o metodologię DDD (Domain-Driven Design) i koncepcję Bounded Context (Ograniczonego Kontekstu). Każdy komponent musi posiadać precyzyjnie zdefiniowane granice i własny model danych, który nie wycieka na zewnątrz, a komunikacja pomiędzy tymi granicami odbywa się wyłącznie przez jawne, stabilne kontrakty API lub wiadomości.
+Messaging & Event-Driven Patterns
+Styl architektoniczny, w którym systemy komunikują się ze sobą nie poprzez bezpośrednie wywołania sieciowe, ale za pomocą publikowania i konsumowania asynchronicznych Zdarzeń (Events) przesyłanych przez dedykowanych brokerów wiadomości (np. RabbitMQ, Azure Service Bus). Komponent po wykonaniu swojej akcji (np. opłacenie zamówienia) publikuje zdarzenie OrderPaidEvent w przestrzeń sieciową, a inne, całkowicie niezależne usługi (np. magazyn, wysyłka maili) nasłuchują tego zdarzenia i reagują na nie w swoim własnym tempie, zapewniając pełne rozluźnienie powiązań architektonicznych (Loose Coupling).
+Inter-Service Communication Patterns (Sync vs Async)
+Świadomość konsekwencji wyboru modelu komunikacji pomiędzy usługami w chmurze:
+Komunikacja Synchroniczna (HTTP, gRPC): Usługa A wysyła zapytanie do usługi B i blokuje swoje zasoby w oczekiwaniu na odpowiedź. Tworzy to silne powiązania czasowe i grozi efektem domina – jeśli usługa B ulegnie awarii, usługa A również przestanie działać.
+Komunikacja Asynchroniczna (Messaging): Usługa A wrzuca wiadomość na kolejkę i natychmiast wraca do swojej pracy. Usługa B odbiera ją, kiedy jest dostępna, co gwarantuje pełną odporność systemu na chwilowe przestoje poszczególnych komponentów.
+5. Testing & Quality
+Level 1: Podstawy i izolacja kodu
+Unit Testing Frameworks (xUnit / NUnit)
+Wykorzystanie wyspecjalizowanych bibliotek do automatycznego uruchamiania i raportowania wyników testów jednostkowych kodu. Obecnym standardem rynkowym w .NET jest xUnit, gdzie pojedyncze przypadki testowe deklaruje się za pomocą atrybutu [Fact], natomiast do testów wymagających weryfikacji wielu różnych zestawów danych wejściowych stosuje się atrybut [Theory] połączony z kolekcją parametrów przekazywanych w sekcjach [InlineData(param1, param2)].
+AAA Structure (Arrange, Act, Assert)
+Rygorystyczny standard organizacji kodu wewnątrz każdego testu, gwarantujący jego maksymalną czytelność i łatwość utrzymania:
+Arrange (Przygotowanie): Inicjalizacja testowanego obiektu, przygotowanie danych wejściowych oraz skonfigurowanie wszelkich niezbędnych atrap środowiskowych.
+Act (Działanie): Wywołanie dokładnie jednej, konkretnej metody, której zachowanie chcemy zweryfikować w danym scenariuszu.
+Assert (Potwierdzenie): Wykonanie instrukcji sprawdzających (np. Assert.Equal, Assert.NotNull), czy faktyczny wynik zwrócony przez metodę lub stan obiektu jest w 100% zgodny z oczekiwaniami biznesowymi testu.
+Simple Mocking & Moq
+Mockowanie (Atrapowanie): Technika polegająca na symulowaniu zachowania skomplikowanych zależności zewnętrznych (np. repozytorium bazy danych, klienta API, wysyłacza SMS), od których zależy testowana klasa, w celu zapewnienia pełnej izolacji testu jednostkowego. Za pomocą biblioteki Moq programista tworzy dynamiczny obiekt udający dany interfejs i metodą .Setup(x => x.Method()).Returns(...) sztywno programuje jego reakcje na konkretne wywołania, co pozwala przetestować czystą logikę algorytmu bez uruchamiania fizycznej infrastruktury.
+Level 2: Testy integracyjne, zarządzanie danymi i zaawansowane strategie
+Integration Testing
+Typ testów automatycznych, których celem jest zweryfikowanie poprawnego współdziałania wielu warstw aplikacji oraz jej integracji z prawdziwą infrastrukturą zewnętrzną (np. bazą danych czy systemem plików). W ASP.NET Core realizuje się je za pomocą klasy WebApplicationFactory<T>, która pozwala podnieść całe Twoje API w pamięci operacyjnej komputera na czas testu, umożliwiając wykonywanie prawdziwych żądań HTTP za pomocą obiektu HttpClient i sprawdzanie realnych efektów w bazie danych.
+Test Data Management & Testcontainers
+Strategia kontrolowania stanu danych wykorzystywanych w testach, zapewniająca, że każdy test uruchamia się w identycznych warunkach i nie zależy od wyników poprzednich uruchomień. Nowoczesnym standardem w .NET jest biblioteka Testcontainers, która integruje się z silnikiem Docker i pozwala na automatyczne podnoszenie z poziomu kodu C# czystych, kontenerowych instancji prawdziwych baz danych (np. MS SQL Server) na czas trwania testów integracyjnych, eliminując potrzebę utrzymywania współdzielonych baz testowych.
+Testing Asynchronous Systems
+Zaawansowane testowanie systemów sterowanych zdarzeniami w tle (np. weryfikacja, czy po wysłaniu żądania API procesor tła poprawnie przetworzył wiadomość z kolejki). Testy te nie mogą korzystać z nieprzewidywalnych instrukcji sztywnego blokowania wątku (Thread.Sleep), ponieważ prowadzi to do destabilizacji potoków CI/CD; zamiast tego stosuje się asynchroniczne biblioteki wyczekujące (np. Awaitility lub rozszerzenia FluentAssertions), które w inteligentnej pętli, z określonym limitem czasu (Timeout), regularnie odpytują system o pojawienie się pożądanego stanu końcowego.
+The Test Pyramid (Piramida Testów)
+Fundamentalna zasada inżynieryjna służąca do planowania całościowej strategii testowej w projekcie, optymalizująca koszty i czas wykonania. Nakazuje utrzymywanie odpowiednich proporcji kodu testowego: podstawę piramidy (najwięcej) stanowią tanie, błyskawiczne testy jednostkowe; środek to mniejsza liczba stabilnych testów integracyjnych; natomiast wierzchołek (najmniej) stanowią ciężkie, kosztowne w utrzymaniu i powolne testy End-to-End (E2E) symulujące pełne klikanie użytkownika w przeglądarce.
+Contract Testing
+Zaawansowana strategia testowania integracji w architekturze mikroserwisowej bez konieczności fizycznego uruchamiania całego środowiska sieciowego. Działa w oparciu o tzw. "Kontrakty" (definiowane m.in. w narzędziu Pact), w których usługa konsumująca API sztywno określa format żądania i oczekiwanej odpowiedzi, a usługa dostarczająca API automatycznie weryfikuje swój kod pod kątem zgodności z tym kontraktem, gwarantując, że żadna zmiana kodu u dostawcy nie uszkodzi aplikacji konsumenta.
+Code Coverage & Static Analysis Tools
+Code Coverage (Pokrycie kodu): Metryka określająca procent linii kodu źródłowego, który został fizycznie uruchomiony podczas wykonywania pakietu testów automatycznych (w .NET mierzona zestawem coverlet + ReportGenerator).
+Static Analysis Tools (Analiza Statyczna): Narzędzia skanujące kod źródłowy w poszukiwaniu błędów, luk bezpieczeństwa oraz naruszeń standardów stylowych bez jego faktycznego uruchamiania (np. SonarQube, Roslyn Analyzers). Stanowią obowiązkową bramkę weryfikacyjną w potokach CI/CD, dbając o jednolitość i higienę bazy kodowej całego zespołu.
+
+6. Cloud & DevOps
+Level 1: Fundamenty Azure i konteneryzacja
+Azure Platform Fundamentals
+Resource Groups: Logiczne foldery (kontenery) w chmurze Microsoft Azure służące do grupowania powiązanych ze sobą zasobów jednej aplikacji. Ułatwiają zbiorowe zarządzanie uprawnieniami dostępu, monitorowanie globalnych kosztów utrzymania systemu oraz pozwalają na usunięcie całego środowiska testowego jednym kliknięciem.
+App Services: Platforma typu PaaS (Platform as a Service) zaprojektowana do szybkiego hostowania aplikacji webowych i API. Deweloper konfiguruje jedynie parametry wydajnościowe maszyn, a Azure bierze na siebie pełną odpowiedzialność za stabilność systemu operacyjnego, serwera IIS/Kestrel, certyfikaty SSL oraz automatyczne skalowanie zasobów przy wzroście ruchu.
+Azure Functions: Chmurowe rozwiązanie klasy Serverless (bezserwerowe), stworzone do wykonywania małych, odizolowanych fragmentów kodu uruchamianych w reakcji na konkretne zdarzenia (tzw. Triggers, np. nadejście pliku do storage, żądanie HTTP, nowa wiadomość). Model rozliczeniowy opiera się wyłącznie na faktycznym czasie pracy procesora liczonym w milisekundach, eliminując koszty bezczynności serwera.
+Azure SQL: W pełni zarządzana relacyjna baza danych działająca w modelu chmurowym, oparta na silniku Microsoft SQL Server. Oferuje pełną automatyzację w zakresie wykonywania kopii zapasowych, instalowania poprawek bezpieczeństwa oraz umożliwia elastyczną, dynamiczną zmianę parametrów wydajnościowych bazy bez jakichkolwiek przerw w jej dostępności dla aplikacji.
+Containers & Docker Basics
+Docker: Technologia pozwalająca na spakowanie aplikacji .NET wraz ze wszystkimi jej specyficznymi zależnościami, konfiguracją systemową oraz plikami środowiskowymi do postaci jednego, spójnego i niezmiennego Obrazu (Image). Z tak przygotowanego obrazu uruchamia się odizolowany Kontener (Container), który gwarantuje stuprocentową powtarzalność działania systemu na dowolnym komputerze i serwerze chmurowym, eliminując problemy wynikające z różnic w konfiguracji systemów operacyjnych.
+CI/CD Concepts & Pipelines
+CI (Continuous Integration): Praktyka polegająca na automatycznym integrowaniu kodu dostarczanego przez wszystkich deweloperów do głównego repozytorium. Każdy push wywołuje dedykowany potok (np. GitHub Actions lub Azure DevOps Pipelines), który pobiera kod, buduje aplikację i uruchamia testy automatyczne, dając natychmiastową informację zwrotną o ewentualnym uszkodzeniu systemu.
+CD (Continuous Deployment): Kolejny etap automatyzacji, który po pomyślnym zakończeniu fazy CI samoczynnie, bez udziału człowieka, wdraża nową wersję skompilowanej i przetestowanej aplikacji bezpośrednio na wskazane środowisko chmurowe (np. testowe lub produkcyjne).
+Basic Deployment Processes
+Rozumienie i operowanie na podstawowych mechanizmach wdrażania oprogramowania do chmury. Obejmuje m.in. wykorzystanie koncepcji Deployment Slots (Slotów wdrożeniowych) w usłudze Azure App Service – nowa wersja kodu jest publikowana na ukryty, bezpieczny slot pomocniczy (Staging), gdzie przechodzi ostateczne testy weryfikacyjne, po czym system wykonuje błyskawiczną podmianę sieciową sieci (Swap) ze slotem produkcyjnym, co gwarantuje wdrożenie bez jakiejkolwiek przerwy w działaniu aplikacji dla użytkowników końcowych (Zero Downtime).
+Level 2: Konteneryzacja zaawansowana, orkiestracja i infrastruktura jako kod
+Docker (Zaawansowany)
+Samodzielne projektowanie zoptymalizowanych plików konfiguracyjnych Dockerfile z wykorzystaniem techniki Multi-stage builds. Pozwala ona na rozdzielenie procesu budowania aplikacji (gdzie potrzebne jest ciężkie SDK .NET) od obrazu końcowego (gdzie kopiuje się wyłącznie skompilowane pliki binarne do minimalnego, lekkiego środowiska uruchomieniowego .NET Runtime), drastycznie zmniejszając wagę końcowego kontenera i podnosząc poziom bezpieczeństwa poprzez eliminację zbędnych narzędzi systemowych.
+Kubernetes Basics (AKS)
+Podstawowa znajomość działania i zarządzania klastrami w usłudze AKS (Azure Kubernetes Service), służącej do orkiestracji (zarządzania) setkami kontenerów w środowisku produkcyjnym. Programista musi rozumieć fundamentalne pojęcia K8s: Pod (najmniejsza jednostka uruchomieniowa zawierająca kontener), Deployment (deklaracja określająca ile kopii danej aplikacji ma działać jednocześnie) oraz Service (wewnętrzny komponent sieciowy dbający o stabilny adres IP i automatyczne równoważenie ruchu pomiędzy podami – Load Balancing).
+Pipeline Design
+Umiejętność samodzielnego projektowania, pisania i utrzymywania złożonych plików konfiguracyjnych potoków w formacie YAML dla systemów GitHub Actions lub Azure Pipelines. Obejmuje to prawidłowe dzielenie procesu na niezależne etapy (Stages i Jobs, np. Build → Test Unit → Test Integration → Deploy), zarządzanie bezpiecznym wstrzykiwaniem zmiennych środowiskowych i kluczy dostępu (Secrets), cache'owanie zależności w celu przyspieszenia budowania oraz konfigurowanie warunków uruchamiania kroków w zależności od wybranej gałęzi Git.
+Infrastructure as Code (IaC) Basics
+Koncepcja polegająca na definiowaniu i tworzeniu pełnej infrastruktury chmurowej (np. maszyn wirtualnych, baz danych, sieci sieciowych) za pomocą deklaratywnych plików kodu źródłowego, zamiast ręcznego wyklikiwania ich w portalu Azure. Podstawowa znajomość narzędzi takich jak Terraform lub Azure Bicep pozwala programiście na wersjonowanie struktury środowisk w systemie Git oraz gwarantuje, że środowisko testowe i produkcyjne zostaną stworzone w sposób identyczny, powtarzalny i pozbawiony błędów ludzkich.
+7. Security
+Level 1: Podstawy bezpiecznego kodu i sieci
+Common Vulnerabilities (OWASP Top 10)
+Świadomość i rozumienie działania fundamentalnych zagrożeń bezpieczeństwa aplikacji webowych zebranych w międzynarodowym standardzie OWASP Top 10. Obejmuje to m.in. wiedzę jak unikać podatności na ataki typu SQL Injection (wstrzykiwanie wrogiego kodu SQL, przed czym automatycznie chroni stosowanie parametrów lub EF Core) oraz XSS (Cross-Site Scripting) poprzez rygorystyczne filtrowanie i kodowanie znaków specjalnych w danych wyświetlanych na frontendzie.
+Authentication Concepts
+Teoretyczna podbudowa mechanizmów weryfikacji tożsamości w architekturze sieciowej. Rozumienie różnic pomiędzy tradycyjnym uwierzytelnianiem stanowym (gdzie serwer przechowuje identyfikator sesji użytkownika w pamięci RAM i weryfikuje go na podstawie przesyłanego ciasteczka) a nowoczesnym uwierzytelnianiem bezstanowym, które opiera się na cyfrowo podpisanych tokenach bezpieczeństwa generowanych po poprawnym zalogowaniu.
+HTTPS/TLS Awareness
+Świadomość krytycznego znaczenia szyfrowania ruchu. Rozumienie, że protokół TLS (Transport Layer Security) odpowiada za stworzenie bezpiecznego, szyfrowanego kanału komunikacji pomiędzy przeglądarką klienta a serwerem .NET, co uniemożliwia cyberprzestępcom przechwycenie, podglądanie lub zmodyfikowanie wrażliwych danych tekstowych (takich jak hasła, dane osobowe czy numery kart kredytowych) przesyłanych przez publiczne węzły sieciowe.
+CORS (Cross-Origin Resource Sharing)
+Znajomość i umiejętność konfiguracji mechanizmu bezpieczeństwa zaimplementowanego w przeglądarkach internetowych. CORS blokuje aplikacjom frontendowym pobieranie danych z API znajdującego się pod innym adresem URL (inną domeną lub portem), chyba że serwer API jawnie odeśle nagłówek zezwalający na taki dostęp. Jako programista .NET musisz umieć poprawnie skonfigurować tzw. CORS Policy w pliku Program.cs, precyzyjnie wskazując dozwolone domeny, metody i nagłówki HTTP.
+Basic Input Sanitization
+Praktyka wdrażania zasady absolutnego braku zaufania do jakichkolwiek struktur danych napływających do aplikacji z zewnątrz (od użytkowników, z plików, z zewnętrznych systemów). Polega na bezwzględnym sprawdzaniu typów danych, limitowaniu maksymalnej długości ciągów tekstowych oraz odrzucaniu lub bezpiecznym kodowaniu znaków specjalnych HTML/JavaScript, celem zablokowania prób wstrzyknięcia wrogich skryptów wykonawczych do wnętrza Twojego systemu.
+Level 2: Tożsamość zaawansowana, ochrona sekretów i certyfikaty
+JWT (JSON Web Tokens)
+Biegła znajomość budowy i mechanizmu działania tokenów standardu JWT, wykorzystywanych do bezstanowej autoryzacji w API. Token składa się z trzech segmentów oddzielonych kropkami: Header (algorytm szyfrowania), Payload (zbiór oświadczeń o użytkowniku, tzw. Claims, np. ID, e-mail, role) oraz Signature (podpis kryptograficzny). Ponieważ podpis jest generowany kluczem prywatnym serwera autoryzacji, Twoje API może natychmiast zweryfikować nienaruszalność i autentyczność tokenu za pomocą klucza publicznego, bez kosztownego odpytywania zewnętrznych baz o stan sesji.
+OAuth2 & OIDC (OpenID Connect)
+OAuth2: Przemysłowy protokół autoryzacji (nadawania uprawnień dostępu), który pozwala aplikacji klienckiej na bezpieczne operowanie na zasobach użytkownika w innym serwisie bez konieczności poznawania jego hasła (opiera się na wydawaniu krótkotrwałych tokenów Access Token).
+OIDC (OpenID Connect): Nowoczesna nakładka tożsamościowa zbudowana bezpośrednio na bazie protokołu OAuth2, która dodaje do procesu funkcję uwierzytelniania. Wprowadza specjalny token ID Token w formacie JWT, niosący ujednolicone informacje o profilu zalogowanego użytkownika.
+Identity Systems (Microsoft Entra ID)
+Praktyczna umiejętność integracji aplikacji .NET z korporacyjnymi systemami zarządzania tożsamością w chmurze – Microsoft Entra ID (dawniej Azure Active Directory). Wykorzystując oficjalne biblioteki systemowe (np. Microsoft.Identity.Web), deweloper oddelegowuje cały ciężar rejestracji kont, bezpiecznego resetowania haseł, wymuszania logowania wieloskładnikowego (MFA) oraz federacji tożsamości na zewnętrzną platformę Microsoftu, drastycznie zmniejszając ryzyko prawne i techniczne własnej aplikacji.
+Secure API Design & Secrets Management
+Secure API Design: Projektowanie systemów w myśl strategii Zero Trust (nikdy nie ufaj, zawsze weryfikuj każde żądanie) oraz zasady minimalnych uprawnień (Least Privilege), gdzie każdy komponent posiada dostęp wyłącznie do tych zasobów, które są mu niezbędne do pracy.
+Secrets Management (Azure Key Vault): Rygorystyczny zakaz przechowywania jakichkolwiek haseł, kluczy API czy ciągów połączeń do baz danych w plikach kodu źródłowego czy repozytoriach Git. Wszystkie sekrety przenosi się do w pełni zabezpieczonej, chmurowej usługi Azure Key Vault, skąd aplikacja .NET pobiera je bezpiecznie bezpośrednio do pamięci operacyjnej podczas swojego startu, autoryzując się w chmurze tożsamością systemową (Managed Identity).
+Input Validation Strategies
+Zaawansowana strategia polegająca na wielowarstwowym podejściu do weryfikacji danych. Pierwszy etap to automatyczna walidacja techniczna na samym wejściu do API (za pomocą atrybutów lub reguł FluentValidation), która natychmiast odrzuca błędne strukturalnie żądania kodem 400 Bad Request. Drugi etap to głęboka walidacja biznesowa realizowana wewnątrz warstwy logicznej (Use Cases / Domain), która sprawdza spójność intencji użytkownika z aktualnym stanem bazy danych i regułami przedsiębiorstwa, gwarantując niezmienność reguł bezpieczeństwa systemu.
+Certificate Management
+Zarządzanie cyfrowymi certyfikatami X.509 wykorzystywanymi w systemach produkcyjnych do szyfrowania danych, podpisywania tokenów JWT oraz realizacji bezpiecznej, dwustronnej autoryzacji sieciowej pomiędzy mikroserwisami (mTLS - Mutual TLS). Deweloper musi znać mechanizmy bezpiecznego ładowania i rotowania certyfikatów z poziomu chmury (Azure Key Vault) bez konieczności fizycznego wdrażania lub restartowania kodu wykonywalnego aplikacji przy wygasaniu ważności kluczy.
+
+8. AI Development and Integration
+Level 1: Podstawy modeli i inżynieria promptów
+LLM Core Concepts
+Tokenization (Tokenizacja): Proces lingwistyczno-techniczny, w którym tekst wejściowy wpisywany przez człowieka jest dzielony przez specjalny algorytm (Tokenizer) na małe fragmenty znaków lub podsłów, zwane tokenami, z przypisanymi identyfikatorami liczbowymi. Modele LLM operują wyłącznie na tych liczbach, a nie na literach.
+Context Windows (Okno kontekstowe): Maksymalna, sztywno zdefiniowana przez architekturę danego modelu liczba tokenów, którą model potrafi jednocześnie przetworzyć i utrzymać w swojej pamięci operacyjnej w ramach jednego zapytania. Liczba ta obejmuje zarówno treść Twojego pytania (wraz z całą historią rozmowy wklejoną w tle), jak i generowaną przez model odpowiedź. Przekroczenie tego limitu skutkuje natychmiastowym "obcięciem" najstarszych fragmentów konwersacji.
+Model Comparison & Trade-offs
+Świadomość struktury rynku sztucznej inteligencji. Dzielimy modele na komercyjne, zamknięte systemy API (np. GPT-4o, Claude 3.5 Sonnet, Gemini 1.5 Pro oferujące najwyższą inteligencję i wsparcie korporacyjne) oraz modele otwartoźródłowe / lokalne (np. Llama 3, Mistral), które deweloper może uruchomić na własnej infrastrukturze, gwarantując pełną prywatność danych. Główny kompromis (Trade-off) przy wyborze modelu to: Wielkość (Inteligencja) vs Prędkość (Opóźnienie) vs Koszt finansowy.
+Prompt Engineering
+Zestaw technik i metodologii formułowania zapytań tekstowych do modeli językowych w celu maksymalnego zwiększenia precyzji i determinizmu ich odpowiedzi:
+System Prompts: Instrukcje nadrzędne określające rolę, ton, ograniczenia oraz ramy zachowania modelu w trakcie całej sesji (np. "Działasz jako rygorystyczny analizator kodu C#, odpowiadaj wyłącznie w formacie tabeli").
+Few-shot Prompting: Technika polegająca na wstrzyknięciu do treści zapytania kilku gotowych, wzorcowych przykładów wykonania zadania (para: wejście-wyjście), co pozwala modelowi precyzyjnie zrozumieć skomplikowany format, o który prosimy.
+Chain-of-thought (CoT): Metoda zmuszająca model do rozbicia skomplikowanego problemu logicznego lub matematycznego na mniejsze, sekwencyjne kroki myślowe (poprzez dopisanie polecenia "Przeanalizuj problem krok po kroku"), co drastycznie redukuje liczbę błędów logicznych.
+Structured Output: Konstruowanie promptów w taki sposób, aby zmusić model do rezygnacji z naturalnego języka ludzkiego na rzecz generowania czystych struktur danych o określonym schemacie (głównie JSON), co umożliwia automatyczne przetwarzanie i deserializację odpowiedzi bezpośrednio przez Twój kod w C#.
+Basic AI Coding Assistants
+Wykorzystanie w codziennej pracy asystentów programistycznych zintegrowanych bezpośrednio ze środowiskiem IDE (np. GitHub Copilot). Narzędzia te analizują w locie kontekst aktualnie otwartych plików deweloperskich, strukturę projektu oraz wpisywane komentarze, oferując inteligentne autouzupełnianie całych linii kodu, generowanie testów jednostkowych czy pisanie powtarzalnych bloków strukturalnych, drastycznie przyspieszając pracę.
+Critical Evaluation of AI-Generated Code
+Kluczowa umiejętność dojrzałego inżyniera, opierająca się na zasadzie absolutnego braku zaufania do kodu wygenerowanego przez sztuczną inteligencję. Modele językowe mają naturalną tendencję do generowania tzw. Halucynacji (zmyślania nieistniejących bibliotek NuGet lub metod w C#), wstrzykiwania subtelnych luk bezpieczeństwa czy pisania kodu nieoptymalnego pamięciowo. Każdy wygenerowany blok kodu musi zostać drobiazgowo przeanalizowany linijka po linijka, zweryfikowany pod kątem obsługi wyjątków i bezwzględnie pokryty testami automatycznymi przed scaleniem do repozytorium.
+Level 2: Integracja AI w .NET, RAG i zaawansowane systemy agentowe
+Consuming LLM APIs & Function Calling
+Consuming LLM APIs: Praktyczna integracja modeli językowych z aplikacjami C# za pomocą nowoczesnych, ujednoliconych bibliotek – głównie Semantic Kernel (rozwijany przez Microsoft) oraz oficjalnego pakietu abstrakcji Microsoft.Extensions.AI. Pozwalają one na uniezależnienie kodu aplikacji od konkretnego dostawcy AI (wymiana modelu OpenAI na lokalną Llamę wymaga jedynie zmiany konfiguracji DI).
+Function Calling (Wywoływanie funkcji): Zaawansowany mechanizm, w którym programista rejestruje zwykłe metody C# jako narzędzia dostępne dla modelu LLM. Gdy użytkownik zada pytanie wymagające świeżych lub prywatnych danych (np. "Ile produktów mamy w magazynie?"), model zamiast zmyślać odpowiedź tekstową, przerywa generowanie i zwraca do aplikacji strukturalny JSON z poleceniem: "Uruchom dla mnie metodę C# o nazwie GetStockQuantity z parametrem productId=5". Aplikacja wykonuje kod, zwraca wynik tekstowy do LLM, a model na tej podstawie buduje ostateczną odpowiedź dla człowieka.
+Prompt Management, Memory & Context Handling
+Prompt Management: Strategia polegająca na wyprowadzeniu szablonów promptów z twardego kodu C# do zewnętrznych plików konfiguracyjnych (np. w formacie YAML lub plikach tekstowych Semantic Kernel). Umożliwia to dynamiczne zarządzanie, wersjonowanie i testowanie promptów bez konieczności ponownego kompilowania i wdrażania całej aplikacji.
+Memory & Context Handling: Programistyczne zarządzanie ograniczonym oknem kontekstowym w aplikacjach czatowych. Obejmuje techniki automatycznego streszczania historii rozmowy (Context Summarization) za pomocą mniejszych, tańszych modeli LLM oraz implementowanie pamięci długotrwałej opartej na bazach wektorowych, skąd aplikacja dynamicznie pobiera dawne fakty powiązane z tematem i wstrzykuje je do bieżącego kontekstu.
+RAG Pipelines (Retrieval-Augmented Generation)
+Zaawansowany i niezwykle popularny wzorzec architektoniczny w systemach AI, pozwalający modelom językowym odpowiadać na pytania w oparciu o prywatne, wewnętrzne dokumenty korporacyjne (np. pliki PDF, bazy wiedzy firmy), bez konieczności przeprowadzania bardzo drogiego procesu dotrenowywania (Fine-Tuningu) sieci neuronowej. Architektura RAG w .NET składa się z dwóch głównych faz:
+Faza Indeksowania (Offline): Prywatne dokumenty są dzielone na małe fragmenty tekstowe (tzw. Chunks), przepuszczane przez specjalny model matematyczny (Embedding Model) generujący dla każdego fragmentu wektor liczb reprezentujący jego sens semantyczny, a następnie wektory te są zapisywane w specjalistycznej bazie wektorowej (np. Qdrant, Milvus, Azure AI Search).
+Faza Wyszukiwania (Online): Gdy użytkownik zadaje pytanie, aplikacja .NET w ułamku sekundy generuje wektor dla tego pytania, przeszukuje bazę wektorową w poszukiwaniu fragmentów dokumentów o najbardziej zbliżonym wektorze (najbardziej podobnych znaczeniowo), wstrzykuje te odnalezione fragmenty jako surowy tekst kontekstowy do ostatecznego promptu i wysyła całość do LLM. Model czyta wstrzyknięte dokumenty i na ich podstawie generuje bezbłędną, w pełni uwiarygodnioną odpowiedź.
+Model Context Protocol (MCP)
+Nowoczesny, otwarty standard i protokół komunikacyjny wprowadzony w celu ujednolicenia integracji pomiędzy modelami AI a systemami zewnętrznymi. Działa w architekturze Klient-Serwer, przypominając koncepcję uniwersalnego sterownika: zamiast pisać unikalny kod integracji dla każdej nowej bazy danych czy narzędzia deweloperskiego, aplikacje lub zaawansowani asystenci AI (Klienci) łączą się za pomocą protokołu MCP z dedykowanymi serwerami MCP, które w ustandaryzowany, bezpieczny sposób wystawiają dostęp do zasobów, plików, logów czy specyficznych funkcji systemowych.
+Advanced AI Assistants & Agentic Tools
+Przejście od pasywnych asystentów piszących kod na żądanie do autonomicznych systemów agentowych zdolnych do samodzielnego realizowania złożonych procesów inżynieryjnych:
+GitHub Copilot (Klasyczny): Narzędzie wspierające dewelopera wewnątrz edytora IDE, działające w oparciu o sugestie autouzupełniania i konwersacje w oknie czatu.
+Roo Code (dawniej Roo Cline): Zaawansowany, autonomiczny agent open-source działający jako wtyczka do środowiska programistycznego. Posiada zdolność do samodzielnego analizowania struktury Twojego projektu .NET, czytania i edytowania wielu plików jednocześnie, a także automatycznego uruchamiania poleceń w terminalu systemowym (np. dotnet build, dotnet test), prosząc programistę o akceptację każdego kolejnego kroku swojej strategii naprawy błędu lub implementacji funkcji.
+Claude Code / Agentic Development: Nowoczesne, rewolucyjne systemy programistyczne działające całkowicie autonomicznie bezpośrednio z poziomu konsoli systemowej (CLI). Agentic Tools nie ograniczają się do podpowiadania kodu – deweloper zleca im zadanie biznesowe (np. "Znajdź powód wycieku pamięci w module płatności, napraw go, upewnij się, że testy przechodzą i stwórz czytelnego commita w Git"), a agent samodzielnie, wykorzystując model LLM jako główny mózg decyzyjny, analizuje kod, wprowadza poprawki, kompiluje projekt i weryfikuje stabilność systemu.
+9. Engineering Practices & Collaboration
+Level 1: Komunikacja, zwinność i Git
+Clear Communication & Problem Solving
+Umiejętność precyzyjnego artykułowania problemów technicznych oraz przejrzystego opisywania architektury swoich rozwiązań bez popadania w nadmierny żargon technologiczny. Podczas dyskusji z zespołem lub biznesem dojrzały programista stosuje strukturę prezentacji "od ogółu do szczegółu" – najpierw wyjaśnia cel biznesowy i kontekst problemu, potem prezentuje logiczne kroki rozwiązania, a na samym końcu przechodzi do detali implementacyjnych w kodzie C#.
+Agile Basics (Scrum vs Kanban)
+Świadomość i rozumienie zasad działania dwóch najpopularniejszych zwinnych metodyk zarządzania procesem wytwarzania oprogramowania, realizujących założenia Manifestu Agile:
+Scrum: Podejście wysoce ustrukturyzowane, w którym praca zespołu jest dzielona na stałe, niezmienne cykle czasowe (najczęściej 2-tygodniowe Sprinty). Na początku sprintu zespół zamraża zakres zadań zobowiązując się do ich dostarczenia, a proces kończy się prezentacją działającego oprogramowania klientowi. Metodyka ta ściśle definiuje role: Product Owner (biznes), Scrum Master (proces) oraz Zespół Deweloperski.
+Kanban: Metodyka maksymalnie elastyczna, skupiona na ciągłym, płynnym przepływie zadań na tablicy bez pojęcia sztywnych ram czasowych czy sprintów. Zadania są pobierane z góry kolejki priorytetów w momencie zwolnienia mocy przerobowych, a kluczowym mechanizmem kontroli jest rygorystyczne wprowadzanie limitów zadań w toku (WIP Limits - Work in Progress), co zapobiega rozpraszaniu zespołu i natychmiast obnaża tzw. wąskie gardła projektu.
+Git Workflows
+Biegłe i bezpieczne poruszanie się po systemie kontroli wersji Git w pracy zespołowej. Obejmuje znajomość strategii rozgałęzień – od klasycznego, rozbudowanego GitFlow (z podziałem na długożyjące gałęzie develop, release i master) po nowoczesny, uproszczony standard Trunk-Based Development / GitHub Flow, gdzie deweloperzy tworzą krótkotrwałe gałęzie funkcjonalne (Feature Branches) bezpośrednio od gałęzi głównej main i po zakończeniu prac natychmiast scalają je z powrotem, minimalizując ryzyko wystąpienia skomplikowanych konfliktów kodu (Merge Conflicts).
+Pull Requests & Code Reviews
+Pull Request (PR): Formalny proces zgłoszenia gotowości swojego kodu napisanego na gałęzi pomocniczej do scalenia z główną bazą kodową projektu, zawierający czytelny opis wprowadzonych zmian.
+Code Review: Obowiązkowy etap inżynieryjny, w którym inni członkowie zespołu deweloperskiego drobiazgowo analizują kod zgłoszony w Pull Requeście przed jego ostatecznym wdrożeniem. Służy do kolektywnego wyłapywania błędów architektonicznych i logicznych, dbania o zgodność kodu ze standardami firmy oraz stanowi kluczową platformę do ciągłej nauki, mentorowania i bezbolesnej wymiany wiedzy wewnątrz zespołu.
+Level 2: Architektura dyskusji, estymacje i zarządzanie długiem
+Explaining Trade-offs & Design Discussions
+Zdolność do aktywnego i dojrzałego uczestniczenia w spotkaniach architektonicznych zespołu poprzez odejście od dogmatycznego podejścia do technologii. Doświadczony deweloper potrafi rzetelnie przeanalizować i zaprezentować Kompromisy (Trade-offs) każdego rozwiązania – przykładowo, argumentując za wdrożeniem architektury heksagonalnej, potrafi jasno wykazać, że zyskiem będzie idealna izolacja biznesu i łatwość testowania (zalety), ale kosztem będzie konieczność napisania znacznie większej liczby klas, interfejsów i mapowań (wady), pozwalając zespołowi na podjęcie świadomej decyzji inżynieryjnej.
+Estimation Techniques
+Znajomość i sprawne posługiwanie się różnorodnymi technikami wyceniania złożoności i pracochłonności zadań programistycznych, pomagającymi biznesowi w planowaniu harmonogramów wydań. Obejmuje m.in. Planning Poker (zespołowa estymacja przy użyciu kart z ciągiem Fibonacciego w celu określenia relatywnej trudności zadania w tzw. Story Points), technikę T-Shirt Sizing (szybkie szacowanie dużych partii materiału za pomocą rozmiarów XS, S, M, L, XL) oraz estymację przez analogię do zadań o identycznym stopniu skomplikowania zrealizowanych w przeszłości.
+Backlog Refinement Facilitation
+Umiejętność samodzielnego prowadzenia i moderowania spotkań służących do pielęgnacji i doprecyzowywania zadań w backlogu projektowym. Doświadczony inżynier współpracuje ściśle z Product Ownerem, zadając pytania o przypadki skrajne (Edge Cases), wymagania niefunkcjonalne (wydajność, bezpieczeństwo) oraz dba o to, by każde zadanie dopuszczone do planowania spełniało rygorystyczne kryteria DoR (Definition of Ready) – czyli było w pełni zrozumiałe, rozbite na optymalne klocki i pozbawione zewnętrznych blokad technologicznych.
+Mentoring Junior Team Members
+Proces świadomego i cierpliwego wspierania rozwoju zawodowego młodszych stażem programistów w zespole. Wykracza daleko poza suche wytykanie błędów w Code Review; obejmuje regularną pracę w parach (Pair Programming), tłumaczenie głębszego tła architektonicznego decyzji podejmowanych w systemie oraz zadawanie pytań naprowadzających zamiast podawania gotowych rozwiązań na tacy, co skutecznie buduje techniczną samodzielność juniora.
+Technical Debt Identification & Prioritization
+Dług Techniczny (Technical Debt): Świadomy lub nieświadomy kompromis inżynieryjny, polegający na wybraniu rozwiązania szybkiego, gorszego jakościowo i łatwiejszego w implementacji, kosztem pogorszenia architektury systemu i utrudnienia jego rozwoju w przyszłości.
+Identyfikacja i Priorytetyzacja: Doświadczony programista potrafi aktywnie monitorować bazę kodową, wyłapywać architektoniczne "smrodki" (brak testów, przestarzałe biblioteki, splątany kod) i wpisywać je do backlogu jako jawne zadania techniczne. Następnie potrafi przełożyć ten problem na język korzyści biznesowych, argumentując przed Product Ownerem konieczność poświęcenia np. 20% czasu najbliższych sprintów na spłatę długu (refaktoryzację), wykazując, że zaniechanie tego działania drastycznie spowolni lub całkowicie zablokuje wdrażanie kluczowych funkcji biznesowych w kolejnych miesiącach.
+
+
+Żygadło-Barski, Krzysztof
+Załączniki
+pon., 8 cze, 16:51 (4 dni temu)
+do mnie
+
+1. Broker types (mental model)
+
+Kafka = event log (streaming platform)
+RabbitMQ = message queue with routing
+IBM MQ = enterprise messaging with transactions
+
+2. Core differences
+
+Kafka:
+
+stores history (event log)
+supports replay (read again)
+multiple consumers read independently
+high throughput via partitions
+RabbitMQ / IBM MQ:
+
+message goes to a queue
+one consumer processes it
+message disappears after processing
+no replay
+3. When to use
+
+Kafka:
+
+event-driven architecture
+streaming data
+analytics pipelines
+audit logs
+many consumers reacting to the same event
+RabbitMQ:
+
+background jobs (emails, file processing)
+async microservice communication
+routing (different message types → different queues)
+simple task distribution
+IBM MQ:
+
+banking / legacy systems
+mainframe integration
+distributed transactions (XA)
+strict delivery guarantees
+4. Why they are not interchangeable
+
+Kafka:
+
+not natural for task queues (messages don’t disappear)
+overkill for simple async jobs
+RabbitMQ:
+
+no history / replay
+not suited for event sourcing or streaming
+IBM MQ:
+
+heavy and costly
+overkill for modern lightweight systems
+5. Key concepts
+
+Topic (Kafka):
+
+category of events (e.g. order.created)
+append-only stream
+Partition:
+
+shard of a topic
+enables parallelism
+ordering guaranteed only within a partition
+Consumer group:
+
+group of consumers sharing work
+one logical subscriber
+Offset:
+
+position in the topic
+allows replay
+Queue:
+
+FIFO list of messages
+one message → one consumer
+Exchange (RabbitMQ):
+
+routes messages to queues
+Routing key:
+
+routing rule (e.g. order.eu)
+DLQ (Dead Letter Queue):
+
+stores failed messages
+Producer:
+
+sends messages
+Consumer:
+
+processes messages
+6. Event-driven vs queue
+
+Event-driven:
+
+publish event
+multiple independent consumers
+loose coupling
+Kafka fits best
+Queue-based:
+
+assign task
+one worker executes
+RabbitMQ / IBM MQ
+7. Common issues
+
+Broken messages:
+
+invalid JSON
+missing fields
+schema changes between services
+null / wrong types
+Solutions:
+
+retries
+DLQ
+schema versioning
+8. Kafka retention
+
+Kafka is not infinite:
+
+time-based (e.g. 7 days)
+size-based (e.g. 100GB)
+compaction (keep latest per key)
+9. One-line summary
+
+Kafka = data stream + history
+RabbitMQ = task processing
+IBM MQ = guaranteed delivery + transactions
+
+ 
+
+ 
+
+____________________________________________
+
+Krzysztof Żygadło-Barski
+
+Senior Software Engineer | People Manager | FS BCM Capital Markets
+
+Mobile: +48 728 422 526
+
+____________________________________________
+
+ 
+
+From: Zygadlo, Krzysztof-XT <krzysztof.zygadlo@ubs.com>
+Sent: poniedziałek, 8 czerwca 2026 14:54
+To: Żygadło-Barski, Krzysztof <krzysztof.zygadlo-barski@capgemini.com>
+Subject: definition
+
+ 
+
+This mail has been sent from an external source. Do not reply to it, or open any links/attachments unless you are sure of the sender's identity.
+
+
+ 
+
+API & NETWORK BASICS — CHEAT SHEET
+
+1. Core definitions
+
+Protocol
+A protocol is a set of rules that define how systems communicate (format, order, error handling).
+Examples: HTTP, TCP, SMTP, WebSocket.
+
+API
+An API is a set of endpoints exposed by an application.
+Example:
+
+GET /users
+
+POST /orders
+
+2. Layers (very important)
+
+Application (your code / API)
+
+↓
+
+HTTP / SMTP / WebSocket (application protocols)
+
+↓
+
+TCP (transport protocol)
+
+TCP (Transmission Control Protocol)
+
+Responsible for transporting data
+Ensures reliability (order, retries, delivery)
+Does not understand meaning of data
+HTTP (HyperText Transfer Protocol)
+
+Defines request–response communication
+Adds structure: methods, headers, status codes
+Key idea:
+
+TCP = transport
+
+HTTP = meaning of communication
+
+3. Protocol vs API vs REST vs GraphQL
+
+Protocol
+
+Defines how systems talk
+Examples: HTTP, TCP, SMTP, WebSocket
+API
+
+Concrete endpoints you expose
+Example: /users
+REST (Representational State Transfer)
+
+A style for designing APIs
+Uses HTTP
+Defines best practices (structure, naming, statelessness)
+GraphQL
+
+Alternative API approach
+One endpoint + query language
+Client chooses returned data
+gRPC (gRPC Remote Procedure Call)
+
+RPC-style communication (call remote functions)
+Uses binary format (Protobuf)
+SOAP (Simple Object Access Protocol)
+
+Protocol + standard for structured messaging (XML-based)
+4. HTTP vs REST (common confusion)
+
+HTTP
+
+Transport protocol for web communication
+Provides:
+methods (GET, POST, etc.)
+status codes
+headers
+REST
+
+Defines HOW to use HTTP correctly
+Key difference:
+
+HTTP = tools
+
+REST = rules for using those tools
+
+Example:
+
+Non‑REST:
+
+POST /getUserData
+
+REST:
+
+GET /users/123
+
+5. REST — core principles (must know)
+
+Resource-based URLs:
+/users
+/orders
+Use HTTP methods:
+GET    → read
+POST   → create
+PUT    → update
+DELETE → remove
+Stateless:
+every request contains all required data
+Use proper status codes:
+200 / 404 / 500
+6. REST vs GraphQL
+
+REST
+
+many endpoints
+server defines response structure
+can cause:
+over-fetching (too much data)
+under-fetching (too little data)
+GraphQL
+
+single endpoint
+client defines needed data
+Example GraphQL query:
+
+{
+
+  user {
+
+    name
+
+  }
+
+}
+
+7. HTTP vs SMTP
+
+HTTP
+
+synchronous request-response
+used for APIs and web
+SMTP (Simple Mail Transfer Protocol)
+
+used for sending emails
+asynchronous
+supports:
+retries
+routing between servers
+delivery queues
+Key difference:
+
+HTTP = communication
+
+SMTP = message delivery system
+
+8. Stateless vs session
+
+HTTP is stateless by default
+
+each request is independent
+Session exists only if implemented
+
+using:
+cookies
+session ID
+JWT
+9. WebSocket / Webhook / Polling
+
+WebSocket
+
+persistent connection
+real-time communication
+protocol runs over TCP
+starts via HTTP handshake
+Use case: chat, live updates
+
+Webhook
+
+event-based communication
+server sends HTTP POST to your endpoint
+Use case: payment notifications
+
+Polling
+
+client repeatedly asks:
+GET /status
+comparison
+
+type
+
+who initiates
+
+connection
+
+use case
+
+HTTP
+
+client
+
+short
+
+standard API
+
+Polling
+
+client
+
+repeated
+
+periodic checks
+
+Webhook
+
+server
+
+none
+
+event notifications
+
+WebSocket
+
+both
+
+persistent
+
+real-time apps
+
+10. WebSocket vs Webhook (important)
+
+They are NOT interchangeable.
+
+WebSocket
+
+real-time UI (frontend ↔ backend)
+requires active connection
+Webhook
+
+system-to-system communication
+does not require connection
+reliable for events
+Typical architecture:
+
+External system → Webhook → Backend → WebSocket → Frontend
+
+11. gRPC and Protobuf
+
+Protobuf
+
+binary data format
+faster and smaller than JSON
+gRPC
+
+remote procedure call framework
+uses Protobuf
+designed for high-performance systems
+12. Final mental model
+
+TCP        = data transport
+
+HTTP       = web communication protocol
+
+SMTP       = email delivery protocol
+
+WebSocket  = real-time protocol
+
+ 
+
+REST       = API design style
+
+GraphQL    = API query-based alternative
+
+gRPC       = RPC-based API
+
+ 
+
+API        = actual endpoints
+
+Webhook    = event-based communication pattern
+
+13. Key interview sentences
+
+“TCP handles transport, while HTTP defines the structure of communication.”
+“REST is a design style that standardises how APIs use HTTP.”
+“GraphQL allows the client to request exactly the data it needs.”
+“SMTP enables reliable, asynchronous message delivery.”
+“WebSocket is used for real-time communication, while webhook is used for event-driven system integration.”
+ 
+
+ 
+
+UBS logo
+
+IB & NCL Tech-Non-Core Legacy
+
+UBS Business Solution Poland
+
+ul. Legnicka 48
+
+Wroclaw, Poland
+
+ 
+
+
+
+Capgemini Polska Sp. z o.o.,
+ul. Żwirki i Wigury 16a 02-092 Warszawa,
+Sąd Rejonowy dla m.st. Warszawy, XIV Wydział Gospodarczy Rejestrowy, nr KRS: 0000040605,
+NIP: 526-11-84-467,
+Wysokość kapitału zakładowego: 16.403.320,00 zł.
+This message contains information that may be privileged or confidential and is the property of the Capgemini Group. It is intended only for the person to whom it is addressed. If you are not the intended recipient, you are not authorized to read, print, retain, copy, disseminate, distribute, or use this message or any part thereof. If you receive this message in error, please notify the sender immediately and delete all copies of this message.
+...
+
+[Wiadomość skrócona]  Pokaż całą wiadomość
+ 1 załącznik
+  •  Przeskanowane przez Gmaila
+
+Żygadło-Barski, Krzysztof
+Załączniki
+śr., 10 cze, 17:01 (2 dni temu)
+Podsumowanie – bazy danych, NoSQL i współbieżność SQL vs NoSQL SQL (relacyjne) sprawdza się tam, gdzie najważniejsze są spójność danych, transakcje, constraints
+
+Żygadło-Barski, Krzysztof
+Załączniki
+10:33 (0 minut temu)
+do mnie
+
+Podsumowanie SQL – Wydajność, Modelowanie, Optymalizacja
+
+1. Indeksy
+
+Co to indeksy i jaki problem rozwiązują?
+
+Indeksy to struktury danych (B-drzewa) z posortowanymi wartościami kolumny + odniesieniami do rekordów. Pozwala wyszukiwać w O(log n) zamiast O(n). Problem: bez indeksów każde WHERE wymaga pełnego skanowania tabeli. Rozwiązanie: indeks drastycznie przyspieszył queryje.
+
+Clustered vs Non-Clustered
+
+Clustered: fizycznie zmienia kolejność danych w tabeli (jeden na tabelę). Dane są przechowywane w kolejności indeksu. Szybki bo zawiera całe rekordy.
+Non-clustered: osobna struktura z odniesieniami do pełnych rekordów (wiele na tabelę). Wymaga dodatkowego lookup do tabeli (bookmark lookup).
+Table Scan vs Seek
+
+Table Scan: czyta całą tabelę od A do Z (wszystkie bloki dyskowe). Kiedy: brak indeksu lub zapytanie wymaga >5-10% tabeli.
+Seek: skok do indeksu, binary search, skok do pełnego rekordu. Kiedy: jest indeks na kolumnie WHERE. ~10-100x szybszy niż scan.
+Minusy indeksów
+
+Storage: każdy indeks to kopia danych na dysku (100GB tabela → duże indeksy)
+Write penalty: INSERT/UPDATE/DELETE musi aktualizować tabelę + wszystkie indeksy
+Maintenance: REBUILD/REORGANIZE gdy się fragmentują (to lock na tabelę)
+Wrong index: indeks na kolumnie która nigdy nie jest w WHERE = marnowany storage
+Query plan bugs: planer może wybrać Table Scan zamiast Seek bo stare statystyki
+Paradoks covering index: zamiast jednego indeksu na 3 kolumny, tworzysz 3 indeksy = powolne queryje
+2. Execution Plan i Query Profiler
+
+Execution Plan
+
+Co: schemat – jak DBMS chce wykonać zapytanie (operacje: scan, seek, join type, koszty)
+Kiedy: zanim zapytanie się wykonaFiona
+Dla: zrozumienia algorytmu, wychwycenia logicznych błędów (table scan zamiast seek)
+Czytasz: od prawej do lewej
+Query Profiler (STATISTICS)
+
+Co: metryki rzeczywiste – ile czasu, ile I/O, ile CPU
+Kiedy: po wykonaniu
+Dla: weryfikacji czy plan był dokładny, gdzie tracimy czas
+Komendy: SET STATISTICS TIME/IO (SQL Server), EXPLAIN ANALYZE (PostgreSQL)
+Praktyka debugowania
+
+Uruchom execution plan → szukaj table scans, hash joins
+Profiler → co jest najdroższe (CPU? I/O? locking?)
+Sprawdź czy brakuje indeksów
+Analiza statystyk
+3. Statystyki
+
+Co to?
+
+Histogramy rozkładu wartości w kolumnie. Rola: planista zapytań kieruje się nimi przy wyborze planu.
+
+Jak działają na performance?
+
+Statystyki aktualne: planer dokładnie wie ile wierszy zapytanie zwróci → wybiera optymalny plan
+Statystyki stare: planer myśli że zwróci 1000 wierszy, ale zwraca 1M → wybiera złą strategię (nested loop zamiast hash join)
+Praktyka
+
+UPDATE STATISTICS po BULK INSERT/DELETE – bo dane się zmieniły, stare statystyki nie reprezentują rzeczywistości.
+
+4. Debugowanie wolnych queryji
+
+Krok po kroku
+
+Execution plan – szukaj table scans, hash joins zamiast ich optymalnych wariantów
+Profiler – ile czasu, ile I/O?
+Indeksy – czy brakuje na kolumnach WHERE, JOIN, ORDER BY?
+Blocking/locking – czy ktoś trzyma lock?
+Statystyki – czy planer ma poprawne szacunki?
+Rewrite – uprość queryje, usuń subqueryje, materialize intermediate results
+Kill long query (w praktyce)
+
+Runaway query (bug): kartezjański iloczyn, 100M wierszy → KILL (zaloguj się do bazy, KILL session_id)
+Legitne query ale long: nocny job, aggregate 10M rekordów → nie kill, to ok że trwa
+Skąd wiesz czy kill'ować? Sprawdź plan (błąd logiczny?), kiedy startało, pytaj się DEV'a
+W praktyce: monitoring (New Relic, Datadog) pokazuje 95-centyl zapytań. Jeśli query trwa 10x dłużej → alert.
+5. Baza działa wolno – co zrobić?
+
+Short-term
+
+Kill long queries
+Reduce concurrent workload
+Increase resources (RAM, CPU)
+Mid-term
+
+Optimize hot queries (indeksy, rewrites)
+Update statistics
+Kill blocking locks
+Long-term
+
+Redesign schema (denormalizacja, agregacje)
+Archiwizuj stare dane
+Partycjonowanie
+6. Normalizacja vs Denormalizacja
+
+Normalizacja (3NF, BCNF)
+
+Co: rozbij dane na tabele by uniknąć redundancji
+Plusy: spójność danych, oszczędność miejsca
+Minusy: wiele JOINów → wolne odczyty
+Denormalizacja
+
+Co: dodaj redundancję (duplikuj pola w tabelach)
+Plusy: szybkie odczyty
+Minusy: anomalie przy write (UPDATE wszędzie), brak spójności
+Kiedy używać znormalizowanej?
+
+Read-heavy z elastycznymi queryami (analytics)
+Write-heavy (audits, frequent updates)
+OLTP (e-commerce, CRM, banking)
+Małe dane
+Kiedy używać zdenormalizowanej?
+
+Write-once/read-heavy (logs, events)
+Predefined reports
+Duże dane na dysku
+OLAP (data warehouse)
+Denormalizuj dla najgorętszych queryji
+7. Normalizacja – 3NF vs BCNF
+
+3NF (Third Normal Form)
+
+Każde pole niejednostkowe musi zależy całkowicie od klucza głównego
+Nie mogą być przechodnie zależności (A → B → C)
+Może mieć małe anomalie (indirect dependencies)
+BCNF (Boyce-Codd Normal Form)
+
+Bardziej restrykcyjna niż 3NF
+Każde pole musi zależy wyłącznie od klucza głównego (zero wyjątków)
+Zero anomalii
+Różnica w praktyce
+
+Aspekt
+
+3NF
+
+BCNF
+
+Anomalie
+
+Mogą być
+
+Zero
+
+Simplicity
+
+Zwykle wystarczy
+
+Purystyczne
+
+Tables
+
+Mniej
+
+Więcej JOINów
+
+Kiedy
+
+95% przypadków (OLTP)
+
+5% (academic, complex)
+
+8. ORMy (Object-Relational Mapping)
+
+Po co są?
+
+Mapowanie OOP ↔ SQL (obiekty → wiersze). Eliminacja boilerplate SQL, abstrakcja DB.
+
+Plusy
+
+Mniej kodu – zamiast SQL, piszesz user.save()
+Bezpieczeństwo – ORM automatycznie prepared statements → osłona przed SQL injection
+Portabilność – ten sam kod na PostgreSQL, MySQL, SQL Server
+Testowanie – mockujesz ORM repository, nie DB
+Minusy
+
+N+1 queries problem – ORM wyciąga 1 user, potem dla każdego user'a wyciąga posty = 1+100 queryji zamiast 1 JOIN
+Mniej kontroli – trudno zoptymalizować zapytanie, musisz raw SQL
+Performance overhead – mapowanie wyników na obiekty
+Lazy loading gotchas – akcesujesz pole niezaładowane → automatyczny SELECT (łatwo robić buggy kod)
+Migration hell – zmiana schematu + zmiana ORM mappings + zmiana kodu
+N+1 queries problem
+
+// ❌ ZŁE
+
+var users = db.Users.ToList();  // 1 query
+
+foreach (var user in users) {
+
+    var posts = db.Posts.Where(p => p.UserId == user.Id).ToList();  // +N queryji
+
+}
+
+// Razem: 1 + N queryji
+
+ 
+
+// ✅ DOBRZE
+
+var users = db.Users.Include(u => u.Posts).ToList();  // 1 query z JOINem
+
+9. DAL Pattern (Data Access Layer)
+
+Co to?
+
+Warstwa abstraktu między business logic a DBMS. Centralne miejsce gdzie jest SQL.
+
+Bez DAL (chaos)
+
+public class UserController {
+
+    var connection = new SqlConnection("...");
+
+    var command = new SqlCommand("SELECT * FROM users WHERE id=@id", connection);
+
+    // SQL wszędzie w kodzie
+
+}
+
+Z DAL (czysty kod)
+
+public interface IUserRepository {
+
+    User GetById(int id);
+
+}
+
+ 
+
+public class UserRepository : IUserRepository {
+
+    public User GetById(int id) {
+
+        // SQL TYLKO tutaj!
+
+        var connection = new SqlConnection("...");
+
+        var command = new SqlCommand("SELECT * FROM users WHERE id=@id", connection);
+
+        return new User { ... };
+
+    }
+
+}
+
+ 
+
+public class UserController {
+
+    private IUserRepository _repo;
+
+   
+
+    public IActionResult GetUser(int id) {
+
+        var user = _repo.GetById(id);  // Czysto, bez SQL
+
+        return Ok(user);
+
+    }
+
+}
+
+Korzyści DAL
+
+Centralne SQL – zmienisz schemat? Zmienisz UserRepository raz
+Testowanie – mockujesz IUserRepository, nie DB
+Swap'owanie DB – zmiana z SqlServer na PostgreSQL bez zmian w biznesie
+Czytelność – biznesowy kod nie widzi SQL
+Performance – cache, indeksy, JOINy – wszystko w jednym miejscu
+10. OLTP vs OLAP
+
+OLTP (OnLine Transaction Processing)
+
+Co: bazy dla codziennych transakcji
+Karakterystyka: wiele małych INSERT/UPDATE/DELETE, normalized schema, ACID, wiele sesji równocześnie
+Przykłady: e-commerce, banking, CRM
+Queryje: proste (SELECT po kluczu głównym)
+Data: świeże, aktualne
+OLAP (OnLine Analytical Processing)
+
+Co: bazy dla analityki
+Charakterystyka: duże SELECT (100M wierszy), denormalizacja, data warehouse
+Przykłady: raportowanie, analytics
+Queryje: complex (wiele JOINów, agregacji)
+Data: historyczne, agregowane
+11. Słownik
+
+DBMS = Database Management System (SQL Server, PostgreSQL, MySQL, Oracle)
+ROI = Return On Investment (zysk / koszt)
+Hot queries = zapytania wykonywane bardzo często (optymalizuj je bo duży ROI)
+Seek = skok do indeksu, szybko (~O(log n))
+Scan = czyta całą tabelę, wolno (~O(n))
+DAL = Data Access Layer (warstwa dostępu do danych)
+Deadlock = sesja A czeka na B, sesja B czeka na A → DBMS automatycznie kill'uje jedną
+Execution plan = schemat jak DBMS wykona zapytanie
+Profiler = pomiar rzeczywistych metryk (czas, I/O, CPU)
+Statystyki = histogramy rozkładu wartości (planista się nimi kieruje)

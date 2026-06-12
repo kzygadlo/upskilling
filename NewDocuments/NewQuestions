@@ -1,0 +1,120 @@
+1. Doświadczenie projektowe / architektura / decyzje techniczne
+Opisz najważniejsze projekty, nad którymi pracowałeś
+Opisz architekturę systemu i warstwy aplikacji
+Jakie frameworki i technologie wykorzystywałeś
+Jakie były największe wyzwania techniczne w projekcie
+Jakie decyzje architektoniczne podejmowałeś i dlaczego
+Dlaczego wybrałeś daną technologię / typ aplikacji (np. WPF vs web)
+Monolit vs mikroserwisy – plusy, minusy, trade-offy
+NFR w kontekście API
+Dobre praktyki projektowe i developerskie
+LTS w .NET
+Roslyn / rola kompilatora i analizatorów kodu
+
+2. C# / .NET – podstawy języka i runtime
+Generics – czym są, po co się ich używa, zalety
+Constraints w generykach (where T : ...)
+Nullable types – czym są i dlaczego są przydatne
+Lambda expressions
+IEnumerable vs IQueryable
+Stack vs Heap – czym są i co jest gdzie przechowywane
+GC – czym jest, jak działa, generacje GC
+IDisposable – kiedy używać, jak używać, na co uważać
+Dispose() vs finalizer
+ADO.NET – jakie obiekty bazodanowe można obsługiwać
+
+3. Asynchroniczność / wielowątkowość / współbieżność
+async / await
+async Task vs async void
+Threads vs Tasks vs ThreadPool
+Problemy w async – deadlocki, pułapki i typowe błędy
+Race condition – czym jest i jak jej unikać
+Deadlock – czym jest i jak go rozwiązywać
+Mechanizmy synchronizacji: lock, Monitor, Mutex, Semaphore, SemaphoreSlim
+Thread-safe collections: BlockingCollection, ConcurrentDictionary, Channel
+
+4. Kolekcje / struktury danych / złożoność
+List vs Dictionary / hash table – różnice i use case’y
+Złożoność obliczeniowa O(n) i podstawowe Big-O
+Dlaczego Dictionary jest szybszy od List w określonych scenariuszach
+Podstawowe operacje na kolekcjach i ich koszt
+LINQ – podstawowe użycie i wpływ na wydajność
+
+5. OOP / SOLID / wzorce projektowe
+SOLID – wszystkie 5 zasad
+Interface Segregation Principle
+Open/Closed Principle w kontekście polimorfizmu
+Dependency Injection – czym jest, po co się go stosuje
+IoC – czym jest i relacja do DI
+Sposoby realizacji DI w C# (np. constructor injection)
+Wzorce projektowe, z których korzystałeś
+Singleton
+Factory
+Adapter
+Proxy
+Orchestrator
+Kiedy wzorce pomagają, a kiedy przeszkadzają
+
+6. Testowanie
+Jakich typów testów używałeś
+Mocki – po co się ich używa
+Jakich narzędzi używałeś do mockowania
+Co i jak warto testować w aplikacjach .NET
+
+7. SQL – podstawy zapytań
+INNER JOIN vs LEFT JOIN
+WHERE vs HAVING
+TOP
+Funkcje agregujące
+Jak pobrać n-tą najwyższą wartość (np. 4th highest salary)
+RANK() i funkcje okienkowe
+CTE (Common Table Expression)
+PK (Primary Key)
+Stored procedures – po co są
+
+8. SQL – wydajność / modelowanie / optymalizacja
+Indeksy – czym są i jaki problem rozwiązują
+Indeksy clustered vs non-clustered
+Execution plan
+Query profiler
+Jak debugować wolne zapytania
+Co zrobić, gdy baza działa wolno
+Normalizacja vs denormalizacja
+Kiedy używać znormalizowanej, a kiedy zdenormalizowanej bazy
+ORMy – po co są i jakie mają trade-offy
+SGA pattern / zagadnienia związane z warstwą dostępu do danych
+
+9. WPF / MVVM
+MVVM – czym są Model, View, ViewModel
+Jak View wie, którego ViewModel użyć (DataContext)
+Jak przycisk wykonuje akcję (ICommand)
+Dlaczego wybrać WPF zamiast aplikacji webowej
+
+10. API / security / integracja
+JWT – czym jest i jak działa
+OAuth – czym jest i jak działa
+JWT vs OAuth
+Security w API – podstawowe zagadnienia
+Context / prompt engineering
+Integracja komponentów i odpowiedzialności warstw
+
+11. Tematy przekrojowe / pytania ogólne
+Ogólna rozmowa o dobrych praktykach
+Dlaczego wybrałeś dane podejście technologiczne
+Jak analizujesz problemy wydajnościowe
+Jak podejmujesz decyzje projektowe
+Jakie kompromisy akceptujesz w architekturze
+
+Wersja jeszcze bardziej „pod interview checklist”
+Jeśli chcesz, to mogę to też od razu przerobić na krótką checklistę pytań 1:1 do nauki, np. w takim stylu:
+Czym są generyki i jak działają constraints?
+Czym różni się IEnumerable od IQueryable?
+Jak działa GC w .NET?
+Czym różni się INNER JOIN od LEFT JOIN?
+itd.
+To byłoby lepsze do przepytywania się przed rozmową.
+Mogę Ci od razu zrobić wersję finalną do nauki w 3 poziomach priorytetu:
+must-have
+często pada
+mile widziane / bonus
+To by było chyba najpraktyczniejsze pod interview.

@@ -1,72 +1,66 @@
-using CSharpExercises.Exercises;
+using Azure.Identity;
+using Azure.Security.KeyVault.Secrets;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Identity.Web;
+using System;
+using System.Web;
 
-Console.WriteLine(@"
-╔════════════════════════════════════════════════════════════╗
-║   .NET INTERVIEW PREP - C# EXERCISES                       ║
-║   BCM dotnet Guild Skills Framework Learning              ║
-╚════════════════════════════════════════════════════════════╝
-");
+var builder = WebApplication.CreateBuilder(args);
 
-while (true)
+// 1. CORS (Cross-Origin Resource Sharing)
+builder.Services.AddCors(options =>
 {
-    Console.WriteLine("""
-
-        === DAY 1: C#, .NET Platform & Runtime ===
-
-        1. Value vs Reference Types
-        2. LINQ Fundamentals
-        3. Async/Await Patterns
-        4. Collections & Generics
-        5. Exception Handling
-        6. Boxing & Unboxing
-        7. Modern C# Features (Records, Init-only, Nullable)
-
-        0. Exit
-
-        Choose exercise (0-7):
-        """);
-
-    var choice = Console.ReadLine()?.Trim();
-
-    try
+    options.AddPolicy("FrontendApp", policy =>
     {
-        switch (choice)
-        {
-            case "1":
-                ValueVsReferenceExercise.Run();
-                break;
-            case "2":
-                LINQExercise.Run();
-                break;
-            case "3":
-                AsyncAwaitExercise.Run();
-                break;
-            case "4":
-                CollectionsExercise.Run();
-                break;
-            case "5":
-                ExceptionHandlingExercise.Run();
-                break;
-            case "6":
-                BoxingUnboxingExercise.Run();
-                break;
-            case "7":
-                ModernCSharpExercise.Run();
-                break;
-            case "0":
-                Console.WriteLine("Goodbye! 👋");
-                return;
-            default:
-                Console.WriteLine("❌ Invalid choice. Try again.");
-                break;
-        }
-    }
-    catch (Exception ex)
-    {
-        Console.WriteLine($"❌ Error: {ex.Message}");
-    }
+        policy.WithOrigins("https://trustedfrontend.com")
+              .WithMethods("GET", "POST")
+              .WithHeaders("Content-Type", "Authorization");
+    });
+});
 
-    Console.WriteLine("\nPress any key to continue...");
-    Console.ReadKey();
-    Console.Clear();
+// 2. SECRETS MANAGEMENT (Azure Key Vault)
+if (!builder.Environment.IsDevelopment())
+{
+    var keyVaultUri = new Uri("https://my-secure-vault.vault.azure.net/");
+    var secretClient = new SecretClient(keyVaultUri, new DefaultAzureCredential());
+    
+    KeyVaultSecret dbSecret = secretClient.GetSecret("SqlConnectionString");
+    builder.Configuration["ConnectionStrings:DefaultConnection"] = dbSecret.Value;
 }
+
+// 3. OAUTH2 & IDENTITY SYSTEMS (Azure Entra ID)
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddMicrosoftIdentityWebApi(builder.Configuration.GetSection("AzureAd"));
+
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("RequireAdminRole", policy => 
+        policy.RequireClaim("http://schemas.microsoft.com/ws/2008/06/identity/claims/role", "Admin"));
+});
+
+var app = builder.Build();
+
+app.UseCors("FrontendApp");
+app.UseHttpsRedirection(); // Enforce HTTPS/TLS
+app.UseAuthentication();
+app.UseAuthorization();
+
+// 4. BASIC INPUT SANITIZATION (XSS Protection)
+app.MapPost("/api/comments", (CommentRequest request) =>
+{
+    // Encode special HTML characters
+    string safeComment = HttpUtility.HtmlEncode(request.RawContent);
+    return Results.Ok(new { CleanContent = safeComment });
+});
+
+// 5. SECURE API DESIGN (Protected Endpoints)
+app.MapGet("/api/admin-dashboard", () => Results.Ok("Admin Data"))
+   .RequireAuthorization("RequireAdminRole");
+
+app.Run();
+
+public record CommentRequest(string RawContent);
