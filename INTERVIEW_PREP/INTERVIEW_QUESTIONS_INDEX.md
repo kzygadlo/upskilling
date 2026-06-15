@@ -156,6 +156,11 @@
 | 3.19 | Validation - where should it happen? | Architecture |
 | 3.20 | Error handling strategy - global approach | Architecture |
 
+#### Distributed Transactions & Microservices
+| # | Pytanie | Category |
+|----|---------|----------|
+| 3.21 | SAGA Pattern - distributed transactions in microservices | Microservices |
+
 ---
 
 ### **SEKCJA 4: DATABASE & SQL**
@@ -180,6 +185,14 @@
 | 4.10 | Normalization - czym jest i why important? | Database Design |
 | 4.11 | Denormalization - trade-offs | Database Design |
 | 4.12 | Transactions - czym są i ACID properties | Database Design |
+
+#### Concurrency Control (NEW!)
+| # | Pytanie | Category |
+|----|---------|----------|
+| 4.12a | Locks & Locking mechanisms - Shared, Exclusive, Intent | Concurrency |
+| 4.12b | Isolation Levels - READ UNCOMMITTED → SERIALIZABLE | Concurrency |
+| 4.12c | Optimistic vs Pessimistic Locking - trade-offs | Concurrency |
+| 4.12d | Database Types - SQL vs NoSQL vs NewSQL, kiedy używać | Database Design |
 
 #### Performance & Optimization
 | # | Pytanie | Category |
@@ -252,10 +265,10 @@
 | 0. Soft Skills | 10 |
 | 1. .NET C# Fundamentals | 23 |
 | 2. Web API Design | 20 |
-| 3. Architecture & SOLID | 20 |
-| 4. Database & SQL | 25 |
+| 3. Architecture & SOLID | 21 |
+| 4. Database & SQL | 29 |
 | 5. Testing & DevOps | 20 |
-| **RAZEM** | **118 pytań** |
+| **RAZEM** | **123 pytania** |
 
 ---
 

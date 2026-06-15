@@ -103,11 +103,83 @@ Umiejętność doboru optymalnego narzędzia dostępu do danych w zależności o
 EF Core: Potężny, pełny ORM z automatycznym generowaniem zapytań i śledzeniem stanu – idealny wybór dla operacji zapisu, transakcji oraz złożonej logiki biznesowej, gdzie priorytetem jest bezpieczeństwo typów i szybkość pisania kodu.
 Dapper: Lekki Micro-ORM, który nie posiada mechanizmów śledzenia zmian ani automatycznego generowania SQL, ale w zamian oferuje zerowy narzut wydajnościowy i błyskawiczne mapowanie wyników surowych zapytań SQL na obiekty C# – doskonały wybór dla krytycznych wydajnościowo odczytów, skomplikowanych raportów oraz systemów o dużej przepustowości danych.
 
+Window Functions (Funkcje Okienkowe)
+Zaawansowany mechanizm SQL pozwalający na wykonywanie agregacji bez GROUP BY, zachowując poszczególne wiersze w rezultacie. Funkcja okienkowa operuje na "oknie" wierszy (zdefiniowanym via PARTITION BY i ORDER BY).
+
+Najczęstsze:
+ROW_NUMBER(): Numeruje wiersze sekwencyjnie (1, 2, 3, ...)
+RANK(): Rankinguje wiersze, pominięcie przy remisach (1, 2, 2, 4)
+DENSE_RANK(): Rankinguje bez pomijania (1, 2, 2, 3)
+LAG/LEAD: Dostęp do poprzedniej/następnej wartości
+SUM/COUNT/AVG OVER: Agregat dla okna
+
+Przykład:
+SELECT
+    Id, Salary,
+    ROW_NUMBER() OVER (PARTITION BY Department ORDER BY Salary DESC) as RankInDept,
+    SUM(Salary) OVER (PARTITION BY Department) as DeptTotalSalary,
+    LAG(Salary) OVER (ORDER BY Salary) as PreviousSalary
+FROM Employees;
+
+Zastosowanie: Top N per category, bieżące sumy (running totals), analiza trendów
+
+SQL Concurrency: Locks, Isolation Levels & Transaction Control
+Problemy konkurencji w bazie danych:
+- Dirty Read: Odczytanie niezacommitowanych zmian
+- Non-Repeatable Read: Powtórzony SELECT zwraca inne dane
+- Phantom Read: Nowy wiersz pojawia się między dwoma SELECT'ami
+
+Typy Locków (Locking):
+1. Shared Lock (S): Wielka czytelników, żaden update
+2. Exclusive Lock (X): Wyłącznie jeden, żaden inny dostęp
+3. Intent Lock (IS, IX): "Będę chcieć S/X na resource w środku"
+4. Deadlock: T1 czeka T2, T2 czeka T1 → DBMS kill'uje jedną (automatyczne)
+
+Isolation Levels (SQL Server):
+1. READ UNCOMMITTED: Dirty reads dozwolone (najszybiej, bardzo niebezpieczne)
+2. READ COMMITTED: Brak dirty reads, ale non-repeatable possible (domyślne)
+3. REPEATABLE READ: Żaden update pobranych danych, ale phantom reads possible
+4. SERIALIZABLE: Całkowita izolacja, jak gdyby sekwencyjnie (najwolniej)
+
+SET TRANSACTION ISOLATION LEVEL READ COMMITTED;
+SELECT * FROM Orders WHERE Status = 'Pending';
+
+Optimistic vs Pessimistic Locking (Aplikacyjne):
+PESSIMISTIC: Lock early - assume conflict, lock resource immediately
+  WITH (XLOCK) - exclusive lock
+  Ryzyko: deadlock, bottleneck
+
+OPTIMISTIC: Trust, check at end - assume no conflict, check on save
+  Use ROWVERSION (timestamp) column
+  If row changed → DbUpdateConcurrencyException
+
+Przykład EF Core Optimistic:
+public class Order {
+    public int Id { get; set; }
+    [Timestamp]
+    public byte[] RowVersion { get; set; }  // ← ROWVERSION
+}
+
+try {
+    var order = db.Orders.Find(id);
+    order.Status = "Shipped";
+    db.SaveChanges();
+} catch (DbUpdateConcurrencyException) {
+    // Ktoś zmienił zanim my zacommitowaliśmy
+    // Retry lub merge
+}
+
+Kiedy używać:
+- PESSIMISTIC: Finansowe, mało konkurencji, critical
+- OPTIMISTIC: Web app, dużo konkurencji, mniej conflicts
+
 NoSQL Options & Polyglot Persistence
 Koncepcja stosowania optymalnych rodzajów baz danych do konkretnych zadań w ramach jednego systemu (Polyglot Persistence):
-Document Stores (MongoDB, CosmosDB): Przechowują dane w postaci elastycznych, niezależnych dokumentów JSON bez sztywnego schematu – idealne dla systemów CMS, katalogów produktów lub danych o dynamicznej strukturze.
-Key-Value Stores (Redis): Przechowują proste pary unikalny klucz-wartość bezpośrednio w pamięci podręcznej RAM – używane jako ultraszybkie systemy cache'owania danych, menedżery sesji użytkowników lub systemy dystrybucji wiadomości.
-Time-Series Databases (InfluxDB): Specjalistyczne bazy zoptymalizowane pod kątem błyskawicznego, ciągłego dopisywania i analizowania danych powiązanych rygorystycznie ze stemplami czasu – wykorzystywane do przechowywania logów systemowych, metryk wydajności infrastruktury oraz odczytów telemetrycznych z czujników IoT.
+SQL (Relational): ACID, normalized, perfect for OLTP (e-commerce, banking, CRM)
+Document Stores (MongoDB, CosmosDB): Elastyczne dokumenty JSON, dynamic schema – CMS, katalogi
+Key-Value Stores (Redis): Ultra-fast in-memory, pary klucz-wartość – cache, sessions, queues
+Time-Series Databases (InfluxDB): Dane z timestamp, streaming – logs, metrics, IoT
+Graph Databases (Neo4j): Nodes + edges – social networks, recommendations
 4. Architecture & Design
 Level 1: Podział odpowiedzialności i wzorce
 Layered Architecture & Separation of Concerns (SoC)
@@ -127,6 +199,40 @@ CQRS (Command Query Responsibility Segregation): Wzorzec architektoniczny nakazu
 Level 2: Czysta architektura, odporność i wzorce zdarzeniowe
 Clean Architecture
 Ewolucja architektury heksagonalnej, popularyzowana przez Roberta C. Martina (Uncle Bob), która organizuje kod w postaci koncentrycznych kręgów, gdzie kierunek zależności zawsze bezwzględnie zmierza od zewnątrz do środka. W samym centrum znajdują się Domain Entities (czysty biznes) oraz Use Cases / Application Core (logika aplikacji), a wszelkie szczegóły techniczne, takie jak bazy danych, systemy operacyjne, frameworki czy UI, znajdują się na samym zewnętrznym kręgu i zależą od abstrakcji zdefiniowanych w środku, gwarantując maksymalną testowalność i niezależność systemu od frameworków.
+SAGA Pattern (Distributed Transactions)
+SAGA to wzorzec architektoniczny do obsługi długotrwałych transakcji rozproszonych w mikroserwisach. Problem: w architekturze mikroserwisowej nie możemy używać tradycyjnych ACID transakcji rozciągających się na wiele usług (każdy serwis ma swoją bazę). SAGA dzieli logikę biznesową na serię lokalnych transakcji, każda w obrębie jednego serwisu, zkoordynowane poprzez publikowanie zdarzeń.
+
+Dwa rodzaje SAGA:
+
+1. CHOREOGRAPHY (Event-Driven):
+   Brak centralnego koordynatora. Każdy serwis publikuje event, słuchają go inne serwisy i reagują.
+   Przepływ:
+   - OrderService: CreateOrder → publikuje OrderCreated
+   - PaymentService: słucha OrderCreated → publikuje PaymentProcessed
+   - InventoryService: słucha PaymentProcessed → publikuje InventoryReserved
+   - Jeśli InventoryReserved fails → publikuje OrderFailed, cofa wszystkie poprzednie kroki
+   Zalety: brak SPOFa (Single Point of Failure), rozproszona
+   Wady: trudno śledzić przepływ, złożone debugowanie, ryzyko race conditions
+
+2. ORCHESTRATION (Centralized):
+   Centralny Orchestrator (klasa/serwis) koordynuje kroki.
+   Przepływ:
+   - OrderSaga (orchestrator) czyta komendę CreateOrder
+   - OrderSaga → OrderService.Create() (czeka na wynik)
+   - Jeśli sukces → OrderSaga → PaymentService.Process()
+   - Jeśli fail → OrderSaga → OrderService.Cancel()
+   Zalety: jasna logika, łatwe debugowanie, pełna kontrola
+   Wady: scalability issue (orchestrator jest bottleneck), SPOF
+
+Rollback w SAGA (Compensating Transactions):
+W przypadku błędu na dowolnym kroku, SAGA uruchamia akcje kompensacyjne (undo) dla poprzednich kroków.
+Przykład: OrderFailed → CancelPayment → CancelReservation
+
+Kiedy używać SAGA?
+- Mikroserwisy + długotrwałe procesy
+- Współpraca wielu usług
+- Brak możliwości klasycznych transakcji rozproszczonych (2PC - Two Phase Commit jest zbyt wolny)
+
 Resilience Patterns
 Wzorce odpornościowe stosowane w celach zabezpieczenia aplikacji przed awariami w systemach rozproszonych i komunikacji sieciowej (w .NET realizowane za pomocą biblioteki Polly):
 Retry Pattern: Automatyczne powtórzenie nieudanego zapytania sieciowego (np. do zewnętrznego API) określoną liczbę razy w nadziei, że awaria miała charakter chwilowy.

@@ -930,6 +930,243 @@ services.AddScoped<IOrderRepository, SqlRepository>();
 
 ---
 
+---
+
+## Q3.21: SAGA Pattern - Distributed Transactions in Microservices
+
+**SHORT:**
+**PATTERN**: Long-running transaction across multiple services. Orchestrates local transactions + compensating transactions (undo) if failure.
+
+**FULL ANSWER:**
+
+### Problem
+```
+Traditional ACID transaction won't work across microservices:
+- OrderService has its own DB
+- PaymentService has its own DB
+- InventoryService has its own DB
+
+Can't do: BEGIN TRANSACTION ... SELECT ... UPDATE ... COMMIT (spanning 3 DBs)
+SQL Server can't coordinate across different databases/services.
+```
+
+### Two Types of SAGA
+
+#### 1. CHOREOGRAPHY (Event-Driven, Decentralized)
+```
+No central coordinator. Services publish events, others listen and react.
+
+Flow:
+1. OrderService.CreateOrder() 
+   → Publishes: OrderCreated event
+2. PaymentService listens
+   → Publishes: PaymentProcessed event
+3. InventoryService listens
+   → Publishes: InventoryReserved event
+4. ShippingService listens
+   → Publishes: ShipmentScheduled event
+
+If any fails → publishes OrderFailed
+→ All previous services listen and compensate (rollback)
+
+Pros:
+✓ Decentralized, no SPOF (Single Point of Failure)
+✓ Loosely coupled
+✓ Easy to add new services
+
+Cons:
+✗ Hard to track flow (distributed)
+✗ Hard to debug (events everywhere)
+✗ Race conditions possible
+✗ Cycles possible (A → B → A)
+```
+
+Example:
+```csharp
+// OrderService
+public class OrderService
+{
+    private readonly IEventPublisher eventPublisher;
+    
+    public async Task CreateOrderAsync(Order order)
+    {
+        order.Status = OrderStatus.Created;
+        await SaveAsync(order);
+        
+        // Publish event
+        await eventPublisher.PublishAsync(
+            new OrderCreatedEvent { OrderId = order.Id, Amount = order.Total }
+        );
+    }
+}
+
+// PaymentService (listens to OrderCreatedEvent)
+public class PaymentEventHandler : IEventHandler<OrderCreatedEvent>
+{
+    public async Task HandleAsync(OrderCreatedEvent @event)
+    {
+        try
+        {
+            await paymentGateway.ProcessAsync(@event.Amount);
+            await eventPublisher.PublishAsync(
+                new PaymentProcessedEvent { OrderId = @event.OrderId }
+            );
+        }
+        catch
+        {
+            await eventPublisher.PublishAsync(
+                new PaymentFailedEvent { OrderId = @event.OrderId }
+            );
+        }
+    }
+}
+
+// InventoryService (listens to PaymentProcessedEvent)
+public class InventoryEventHandler : IEventHandler<PaymentProcessedEvent>
+{
+    public async Task HandleAsync(PaymentProcessedEvent @event)
+    {
+        try
+        {
+            await inventory.ReserveAsync(@event.OrderId);
+            await eventPublisher.PublishAsync(
+                new InventoryReservedEvent { OrderId = @event.OrderId }
+            );
+        }
+        catch
+        {
+            await eventPublisher.PublishAsync(
+                new OrderFailedEvent { OrderId = @event.OrderId }
+            );
+        }
+    }
+}
+
+// Compensation handlers (rollback)
+public class OrderFailedHandler : IEventHandler<OrderFailedEvent>
+{
+    public async Task HandleAsync(OrderFailedEvent @event)
+    {
+        // Notify payment service to refund
+        await eventPublisher.PublishAsync(
+            new RefundOrderEvent { OrderId = @event.OrderId }
+        );
+        
+        // Notify inventory to release reservation
+        await eventPublisher.PublishAsync(
+            new ReleaseReservationEvent { OrderId = @event.OrderId }
+        );
+    }
+}
+```
+
+#### 2. ORCHESTRATION (Centralized)
+```
+Central Orchestrator (saga coordinator) directs all steps.
+
+Flow:
+1. OrderSaga receives: CreateOrder command
+2. OrderSaga → calls OrderService.Create()
+   - Waits for result
+3. If success → OrderSaga → calls PaymentService.Process()
+   - Waits for result
+4. If success → OrderSaga → calls InventoryService.Reserve()
+   - Waits for result
+5. If ANY fails → OrderSaga triggers compensating transactions
+
+Pros:
+✓ Clear flow (single place to read)
+✓ Easy to debug (central logic)
+✓ Easy to add conditions/retries
+✓ Can enforce strict ordering
+
+Cons:
+✗ Central bottleneck (SPOF)
+✗ Tightly coupled (orchestrator knows all steps)
+✗ Orchestrator becomes complex (state machine)
+```
+
+Example:
+```csharp
+public class OrderSaga
+{
+    private readonly IOrderService orderService;
+    private readonly IPaymentService paymentService;
+    private readonly IInventoryService inventoryService;
+    
+    public async Task ExecuteAsync(CreateOrderCommand cmd)
+    {
+        var orderId = Guid.NewGuid();
+        var compensations = new Stack<Func<Task>>();
+        
+        try
+        {
+            // Step 1: Create order
+            var order = await orderService.CreateAsync(cmd.OrderId);
+            compensations.Push(() => orderService.CancelAsync(orderId));
+            
+            // Step 2: Process payment
+            var payment = await paymentService.ProcessAsync(order.Total);
+            compensations.Push(() => paymentService.RefundAsync(payment.Id));
+            
+            // Step 3: Reserve inventory
+            var reservation = await inventoryService.ReserveAsync(order.Items);
+            compensations.Push(() => inventoryService.ReleaseAsync(reservation.Id));
+            
+            // Step 4: Schedule shipment
+            await shippingService.ScheduleAsync(order.Id);
+            
+            // Success!
+        }
+        catch (Exception ex)
+        {
+            // Rollback in reverse order
+            while (compensations.Count > 0)
+            {
+                var undo = compensations.Pop();
+                await undo();
+            }
+            throw;
+        }
+    }
+}
+```
+
+### Compensating Transactions
+Undo logic when step fails:
+```
+OrderCreated → OK
+PaymentProcessed → OK
+InventoryReserved → FAILS
+→ Execute compensation:
+  - Cancel payment (refund)
+  - Cancel order
+  - Restore state
+```
+
+### When to Use SAGA
+- Microservices with distributed transactions
+- Long-running business processes
+- Need coordination across services
+- Can't use 2PC (Two Phase Commit = too slow/blocking)
+
+### SAGA vs 2PC (Two Phase Commit)
+```
+2PC (Traditional):
+- PREPARE phase: All services lock resources
+- COMMIT phase: All services commit or all rollback
+- Blocking, slow, tightly coupled
+- Works for tightly-coupled monolith
+
+SAGA (Modern):
+- Each service commits immediately
+- Coordinates via events/commands
+- Loose coupling, eventual consistency
+- Non-blocking, async-friendly
+```
+
+---
+
 ## 📌 SUMMARY - ARCHITECTURE & SOLID
 
 | Principle | Rule |
@@ -941,4 +1178,5 @@ services.AddScoped<IOrderRepository, SqlRepository>();
 | LSP | Derived classes substitute for base |
 | ISP | Many specific interfaces, not one giant |
 | DIP | Depend on abstractions, inject dependencies |
+| SAGA Pattern | Distributed transactions: Choreography vs Orchestration |
 

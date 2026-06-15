@@ -36,6 +36,35 @@ SELECT * FROM ActiveProjects;
 
 ### Q4.6: Window functions
 - ROW_NUMBER(), RANK(), LEAD(), LAG()
+- **WINDOW QUERY definicja**: Operuje na zbiorze wierszy bez GROUP BY, zachowując poszczególne wiersze
+
+```sql
+-- ROW_NUMBER: numerowanie wierszy
+SELECT 
+    Id, ProjectId, Title,
+    ROW_NUMBER() OVER (PARTITION BY ProjectId ORDER BY CreatedDate) as TaskNumber
+FROM Tasks;
+
+-- COUNT OVER: agregat bez GROUP BY
+SELECT 
+    Id, ProjectId, Title,
+    COUNT(*) OVER (PARTITION BY ProjectId) as ProjectTaskCount
+FROM Tasks;
+
+-- LEAD/LAG: poprzednia/następna wartość
+SELECT 
+    Id, Title, CreatedDate,
+    LAG(CreatedDate) OVER (ORDER BY CreatedDate) as PreviousTaskDate,
+    LEAD(CreatedDate) OVER (ORDER BY CreatedDate) as NextTaskDate
+FROM Tasks;
+
+-- RANK vs DENSE_RANK
+SELECT 
+    Id, Points,
+    RANK() OVER (ORDER BY Points DESC) as Rank,              -- 1, 2, 2, 4
+    DENSE_RANK() OVER (ORDER BY Points DESC) as DenseRank    -- 1, 2, 2, 3
+FROM Users;
+```
 
 ---
 
@@ -109,7 +138,7 @@ Projects:
 // Trade: consistency vs performance
 ```
 
-### Q4.12: Transactions
+### Q4.12: Transactions & ACID
 **CONCEPT**: ACID. All-or-nothing.
 
 ```csharp
@@ -118,6 +147,163 @@ BEGIN TRANSACTION
   UPDATE Accounts SET Balance = Balance + 100 WHERE Id = 2;
 COMMIT TRANSACTION;
 // Both succeed or both fail
+```
+
+**ACID Principles**:
+- **A - Atomicity** (Atomowość): Transakcja to wszystko albo nic. Brak częściowych zmian.
+- **C - Consistency** (Spójność): Dane pozostają w spójnym stanie. Reguły biznesowe zawsze zachowane.
+- **I - Isolation** (Izolacja): Równoczesne transakcje się nie zakłócają.
+- **D - Durability** (Trwałość): Co się zacommituje, nigdy się nie zgubi (nawet po wypadzie).
+
+---
+
+## 🔄 Concurrency Control: Locks, Isolation Levels, Optimistic/Pessimistic
+
+### Q4.12a: Rodzaje Lockow (Locking)
+
+```sql
+-- SHARED LOCK (S)
+-- Wiele transakcji może czytać równocześnie, żaden update
+SELECT * FROM Projects WITH (NOLOCK);
+
+-- EXCLUSIVE LOCK (X)
+-- Tylko jedna transakcja, żaden inny access
+UPDATE Projects SET Name = 'New' WHERE Id = 1;
+
+-- INTENT LOCK (IS, IX)
+-- "Będę chcieć X lub S lock na tej tabeli/paginie"
+-- Zapobiega DROP TABLE gdy komuś potrzebny update
+
+-- DEADLOCK
+-- T1: locks Projects, czeka na Tasks
+-- T2: locks Tasks, czeka na Projects
+-- Database wyrzuca jeden i rollback
+```
+
+---
+
+### Q4.12b: Isolation Levels
+
+```sql
+-- 1. READ UNCOMMITTED (najniższy)
+-- Odczytuje niezacommitowane dane (dirty read)
+SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
+-- ✗ Ryzyko: T1 zmienia X na 100, T2 czyta 100, T1 rollback → X jest 50!
+-- ✓ Użycie: Raportowanie przybliżone, gdzie dokładność nie ważna
+
+-- 2. READ COMMITTED (domyślne w SQL Server)
+-- Czyta tylko zacommitowane dane
+SET TRANSACTION ISOLATION LEVEL READ COMMITTED;
+-- ✓ Bezpieczne od dirty read
+-- ✗ Non-repeatable read: T1 czyta X=50, T2 zmienia X=100, T1 znów czyta X=100
+
+-- 3. REPEATABLE READ
+-- Jeśli T1 czyta X, nikt nie może zmienić X
+SET TRANSACTION ISOLATION LEVEL REPEATABLE READ;
+-- ✓ Powtórzony SELECT daje te same dane
+-- ✗ Phantom read: SELECT ... WHERE Age > 30 zwraca 10, nowy wiersz dodany, powtórzenie = 11
+
+-- 4. SERIALIZABLE (najwyższy)
+-- Transakcje się nie mieszają, jak gdyby działały sekwencyjnie
+SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+-- ✓ Całkowita izolacja
+-- ✗ Wolno, deadlock ryzyko, table locks
+
+-- Kiedy użyć?
+READ UNCOMMITTED:  Raportowanie, brudne dane OK
+READ COMMITTED:    Większość aplikacji (domyślne)
+REPEATABLE READ:   Finansowe, gdzie data consistency krytyczna
+SERIALIZABLE:      Ultra-ważne, rzadko (perf issue)
+```
+
+---
+
+### Q4.12c: Optimistic vs Pessimistic Locking
+
+```csharp
+// PESSIMISTIC (lock early)
+// "Założę najgorsze, zaraz ktoś zmieni"
+using (var transaction = db.Database.BeginTransaction())
+{
+    // SQL: SELECT ... WITH (XLOCK) -- Exclusive lock
+    var project = db.Projects.FromSqlInterpolated(
+        $"SELECT * FROM Projects WITH (XLOCK) WHERE Id = {id}"
+    ).FirstOrDefault();
+    
+    project.Name = "Updated";
+    db.SaveChanges();
+    transaction.Commit();
+    // Lock: od SELECT do COMMIT
+    // ✓ Bezpieczny od conflicts
+    // ✗ Slow, deadlock risk, locks konkurentów
+}
+
+// OPTIMISTIC (trust, check at end)
+// "Założę, że nikt nie zmieni, sprawdzę na koniec"
+public class Project
+{
+    public int Id { get; set; }
+    public string Name { get; set; }
+    [Timestamp]  // ← SQL: ROWVERSION
+    public byte[] RowVersion { get; set; }
+}
+
+try
+{
+    var project = db.Projects.Find(id);
+    project.Name = "Updated";
+    db.SaveChanges();  // DbUpdateConcurrencyException jeśli ktoś zmienił
+}
+catch (DbUpdateConcurrencyException)
+{
+    // Ktoś zmienił zanim my zacommitowaliśmy
+    // Retry, merge, lub powiadom user
+}
+
+// Kiedy użyć?
+PESSIMISTIC:  Bankowe (transfer), mało konkurencji, critical
+OPTIMISTIC:   Web app, wiele konkurencji, mniej conflicts
+```
+
+---
+
+## 🗄️ Database Types: SQL vs NoSQL vs NewSQL
+
+### Q4.12d: Rodzaje Baz i Kiedy Się Ich Używa
+
+```
+SQL (Relational):
+├─ Przykład: SQL Server, PostgreSQL, MySQL
+├─ Model: Tabele z constraints (PK, FK, ACID)
+├─ Query: SQL (SELECT, JOIN)
+├─ Skalowanie: Vertical (szybszy serwer)
+├─ ✓ ACID transakcje, normalizacja, relacje
+├─ ✓ Structured data (forma zdefiniowana)
+├─ ✗ Trudne rozproszone systemy
+├─ ✗ Schemaless (zmiana schematu = ALTER TABLE)
+└─ Użycie: ERP, CRM, bankowe, większość OLTP
+
+NoSQL (Non-relational):
+├─ Document (MongoDB): JSON-like dokumenty, flexible schema
+├─ Key-Value (Redis): { "key" → "value" }, ultra-fast cache
+├─ Wide Column (Cassandra): Big Data, Time Series
+├─ Graph (Neo4j): Nodes + edges, sieci społeczne
+├─ ✓ Horizontal skalowanie (wiele maszyn)
+├─ ✓ Flexible schema (bez ALTER TABLE)
+├─ ✓ Duże ilości danych, real-time
+├─ ✗ Brak transakcji (eventual consistency)
+├─ ✗ Brak JOINów (denormalizacja)
+└─ Użycie: Social networks, Real-time analytics, Big Data, cache
+
+NewSQL (Hybrid):
+├─ Przykład: CockroachDB, Google Spanner
+├─ Model: SQL + Horizontal scaling
+├─ ✓ ACID + distributed
+├─ ✗ Nowsze, nie zawsze stable
+└─ Użycie: Global apps, correctness-critical
+
+Twój projekt: SQL (TaskManager - structured, ACID ważny)
+Cache layer: Redis (sesje, frequently accessed)
 ```
 
 ---
@@ -301,10 +487,20 @@ Dapper:
 | Topic | Key Concept |
 |-------|------------|
 | SQL Basics | SELECT, JOIN, WHERE, GROUP BY, aggregate functions |
-| Keys | PK = unique, FK = referential integrity |
-| Relationships | 1:1, 1:N, N:N via junction table |
+| Window Functions | ROW_NUMBER, RANK, LEAD, LAG - operuje bez GROUP BY |
+| Keys | PK = unique, FK = referential integrity (musi być UNIQUE) |
+| Relationships | 1:1 (FK + UNIQUE), 1:N (FK), N:N (junction table) |
+| ACID | Atomicity, Consistency, Isolation, Durability |
+| Locking | Shared (S), Exclusive (X), Intent locks - zapobiega conflicts |
+| Isolation Levels | READ UNCOMMITTED → READ COMMITTED → REPEATABLE READ → SERIALIZABLE |
+| Optimistic Locking | Trust, check at end (ROWVERSION, DbUpdateConcurrencyException) |
+| Pessimistic Locking | Lock early (WITH (XLOCK)), ryzyko deadlock |
+| Database Types | SQL (ACID, relational), NoSQL (scalable, flexible), NewSQL (hybrid) |
 | Normalization | 3NF = good OLTP, eliminate redundancy |
 | Indexes | B-tree, fast reads, slow writes, need maintenance |
+| Statistics | Query planner używa do wyboru SEEK vs SCAN |
+| Execution Plan | Teoretyczne - Index Seek vs Scan |
+| Query Profiler | Praktyczne - CPU time, I/O, memory |
 | N+1 Problem | Include() to load related in 1 query |
 | Change Tracking | EF knows what changed, generates UPDATE |
 | Projections | Select() only needed fields, faster |
